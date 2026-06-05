@@ -1,0 +1,48 @@
+{
+  "recording_schema_version": "1.0.0",
+  "run_id": "golden-fixture",
+  "created_at": "2026-01-01T00:00:00.000000+00:00",
+  "redaction_applied": false,
+  "agent_meta": {
+    "framework": "raw",
+    "framework_version": null,
+    "agent_name": "golden",
+    "model_config": {},
+    "seed": 0,
+    "extra": {}
+  },
+  "steps": [
+    {
+      "step_id": "step-1",
+      "parent_id": null,
+      "started_at": "2026-01-01T00:00:00.000001+00:00",
+      "latency_ms": 1.5,
+      "tokens": null,
+      "cost_usd": null,
+      "payload": {
+        "type": "decision",
+        "label": "plan",
+        "options": [],
+        "chosen": "x",
+        "rationale": null
+      }
+    },
+    {
+      "step_id": "step-2",
+      "parent_id": "step-1",
+      "started_at": "2026-01-01T00:00:00.000002+00:00",
+      "latency_ms": 2.5,
+      "tokens": null,
+      "cost_usd": null,
+      "payload": {
+        "type": "tool_call",
+        "tool": "search",
+        "request": {"q": "volo"},
+        "response": {"hits": []}
+      }
+    }
+  ],
+  "final_output": {"answer": 1},
+  "env_snapshot": null,
+  "tool_specs": []
+}
