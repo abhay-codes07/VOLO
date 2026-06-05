@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Volo pre-commit hook (bible §7.2 + ADR-0002).
+#
+# Installs via `make githooks`. Fast checks only — ruff lint, ruff format check, mypy on
+# the core domain, and the fast pytest slice. Anything slower than ~5s belongs in CI.
+
+set -e
+
+# Only run when there are staged Python / JS / TS / TOML changes.
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(py|tsx?|toml|json|md)$' || true)
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+
+echo "── volo pre-commit ────────────────────────────────────────────"
+
+if ! command -v uv >/dev/null 2>&1; then
+  echo "✗ uv not on PATH — skipping Python checks (install uv to enable)"
+else
+  echo "→ ruff check"
+  uv run ruff check . || { echo "✗ ruff check failed"; exit 1; }
+
+  echo "→ ruff format --check"
+  uv run ruff format --check . || {
+    echo "✗ ruff format would change files. Run: uv run ruff format ."
+    exit 1
+  }
+
+  echo "→ mypy (volo-core)"
+  uv run mypy || { echo "✗ mypy failed"; exit 1; }
+
+  echo "→ pytest fast slice (-x)"
+  uv run pytest -q -x \
+    packages/volo-core \
+    packages/volo-sdk \
+    packages/volo-simulator/tests/test_tier1_replayer.py \
+    packages/volo-reliability/tests/test_metrics.py \
+    packages/volo-diff \
+    tests/test_golden_schemas.py || { echo "✗ pytest failed"; exit 1; }
+fi
+
+echo "── pre-commit ok ──────────────────────────────────────────────"

@@ -1,0 +1,49 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.python-version
+.uv/
+
+# --- testing / caches ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage/
+htmlcov/
+
+# --- Node / JS ---
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+pnpm-lock.yaml  # commit later when deps stabilize; ignore during scaffolding to keep tree clean
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- env / secrets ---
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# --- runtime data ---
+.volo/
+*.log
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

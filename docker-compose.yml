@@ -1,0 +1,42 @@
+# Optional one-command local stack.
+# Default workflow is `make dev` (no Docker required). This file is here for contributors who
+# prefer container-isolated dev or for integration tests on CI runners with Docker available.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      VOLO_DATA_DIR: /data
+      VOLO_LOG_LEVEL: info
+    volumes:
+      - ./.volo:/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_VOLO_API: http://localhost:8080
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  ollama:
+    # Local judge / tool-simulator model host. Optional — bring up with: `docker compose up ollama`.
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    profiles: ["models"]
+    restart: unless-stopped
+
+volumes:
+  ollama-data:
