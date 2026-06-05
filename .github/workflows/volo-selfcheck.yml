@@ -1,0 +1,54 @@
+# Dogfood: run Volo on Volo's own example agents.
+# Bible §7.3: "The product proving itself on every push is also marketing."
+
+name: volo-selfcheck
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  selfcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.8.x"
+
+      - run: uv python install 3.12
+      - run: uv sync --all-packages
+
+      - name: record baseline (calc_agent)
+        run: |
+          mkdir -p .volo/recordings .volo/reports
+          uv run volo record examples.calc_agent:run \
+            --input '{"a":2,"b":3,"c":4}' \
+            --out ./.volo/recordings/calc.json \
+            --data-dir ./.volo
+
+      - name: run reliability suite
+        # Self-check baseline: faithfulness deliberately gets perturbed by the scenarios
+        # in v0.1.0 (e.g. drop_tool_result). We accept a no_ship verdict here as a "yes the
+        # engine is doing its job" signal rather than failing CI. Tighten in M5.
+        run: |
+          set +e
+          uv run volo run ./.volo/recordings/calc.json \
+            --agent examples.calc_agent:run \
+            --input '{"a":2,"b":3,"c":4}' \
+            --n 2 \
+            --out ./.volo/reports/calc.json
+          code=$?
+          echo "volo run exit code: $code"
+          test -s ./.volo/reports/calc.json
+
+      - name: upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reliability-report
+          path: .volo/reports/calc.json
