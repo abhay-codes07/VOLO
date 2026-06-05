@@ -1,0 +1,14 @@
+[project]
+name = "volo-models"
+version = "0.1.0"
+description = "Volo cost-routing brain — Ollama default, frontier APIs opt-in (bible §4 subsystem 7)."
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+dependencies = ["volo-core"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/volo_models"]
