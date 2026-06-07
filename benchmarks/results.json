@@ -1,0 +1,28 @@
+{
+  "results": [
+    {
+      "config": "Tier-1 only (cache replay)",
+      "n": 20,
+      "identical": 4,
+      "flagged": 16,
+      "wrong": 0,
+      "fidelity": 0.2
+    },
+    {
+      "config": "Tier-2 (a) - constrained-gen only",
+      "n": 20,
+      "identical": 4,
+      "flagged": 16,
+      "wrong": 0,
+      "fidelity": 0.2
+    },
+    {
+      "config": "Tier-2 (a)+(b) - source-informed",
+      "n": 20,
+      "identical": 20,
+      "flagged": 0,
+      "wrong": 0,
+      "fidelity": 1.0
+    }
+  ]
+}
