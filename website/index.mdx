@@ -1,0 +1,45 @@
+---
+title: "Volo"
+description: "Deterministic testing for AI agents — record once, replay in CI at ~$0."
+---
+
+**Volo is a flight simulator for AI agents.** Record an agent run once, replay it
+deterministically against a high-fidelity simulated environment that never hallucinates, and
+block reliability regressions in your pull requests — like unit tests and `git bisect`, but for
+agents.
+
+## The problem
+
+Agents can't be tested like normal software: the same input gives a different output,
+prompt/model/tool changes regress silently, and testing against live APIs is slow and expensive.
+Most "evals" re-run a live LLM-as-judge on every check — which **costs API money** *and is itself
+**non-deterministic**, so a green check today can be red tomorrow on the same code.
+
+## The approach
+
+Volo flips it: it **replays a recorded run deterministically against mocked tools**.
+
+<Steps>
+  <Step title="Record">
+    Auto-capture every model call, tool call, and decision into a versioned Recording.
+  </Step>
+  <Step title="Simulate">
+    Replay deterministically. For inputs you never recorded, Volo reconstructs a faithful
+    response from tool specs/sources — or **flags** (never fabricates).
+  </Step>
+  <Step title="Score & gate">
+    Generate adversarial scenarios, score reliability on four metrics, and block regressions in
+    CI at ~$0.
+  </Step>
+</Steps>
+
+## Why it's different
+
+| | Live-judge evals | Volo |
+|---|---|---|
+| Cost per CI run | API $ every run | **~$0 (replay)** |
+| Determinism | no (judge is stochastic) | **yes, by construction** |
+| Un-recorded inputs | n/a | **synthesize faithfully, else flag** |
+| License | mostly closed/cloud | **Apache-2.0 open-core** |
+
+Next: [Quickstart →](/quickstart)

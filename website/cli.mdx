@@ -1,0 +1,47 @@
+---
+title: "CLI reference"
+description: "Every volo command."
+---
+
+Run `uv run volo <command> --help` for full flags.
+
+## `volo init`
+Quickstart: record an agent and score it in one step.
+```bash
+uv run volo init <module:fn> --input '{...}' [--name baseline] [--n 2]
+```
+
+## `volo record`
+Capture a live agent run as a Recording.
+```bash
+uv run volo record <module:fn> --input '{...}' --out ./.volo/recordings/run.json
+```
+
+## `volo sim`
+Boot the simulated environment from a recording and print the transcript (deterministic replay).
+```bash
+uv run volo sim ./.volo/recordings/run.json
+```
+
+## `volo run`
+Run an agent against scenarios; produce a ReliabilityReport + verdict.
+```bash
+uv run volo run <recording> --agent <module:fn> --input '{...}' \
+  [--n 3] [--fail-under 0.9] [--judge heuristic|ollama|groq] [--max-cost-usd 0.50] [--out report.json]
+```
+
+## `volo ci`
+PR-gating entrypoint: same engine as `run`, CI-friendly output, non-zero exit on regression.
+See [Gate pull requests in CI](/ci). Adds `--summary-md PATH`.
+
+## `volo diff`
+Diff two runs and attribute the regression to a step ("git bisect for agents").
+```bash
+uv run volo diff <baseline.json> <candidate.json>
+```
+
+## `volo scenarios`
+List the default adversarial scenario operators and their failure classes.
+
+## `volo demo`
+Seed the data dir with showcase recordings + reports for the dashboard.

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Volo",
+  "description": "Deterministic testing for AI agents — record once, replay in CI at ~$0.",
+  "colors": {
+    "primary": "#4F46E5",
+    "light": "#818CF8",
+    "dark": "#4338CA"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": ["index", "quickstart"]
+          },
+          {
+            "group": "Guides",
+            "pages": ["concepts", "ci", "fidelity"]
+          },
+          {
+            "group": "Reference",
+            "pages": ["cli"]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "primary": {
+      "type": "button",
+      "label": "GitHub",
+      "href": "https://github.com/abhay-codes07/VOLO"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/abhay-codes07/VOLO"
+    }
+  }
+}

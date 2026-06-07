@@ -1,0 +1,36 @@
+---
+title: "Gate pull requests in CI"
+description: "Block reliability regressions on every PR and post the result as a comment."
+---
+
+`volo ci` runs the full suite and exits non-zero on a regression — designed to gate a PR. It can
+also emit a Markdown summary for a PR comment and the GitHub job-summary page.
+
+```bash
+uv run volo ci ./baseline.json \
+  --agent your_pkg.agent:run \
+  --input '{"query":"..."}' \
+  --summary-md ./volo-report.md
+```
+
+## Drop-in GitHub Action
+
+A copy-paste workflow lives at
+[`.github/workflows/volo-pr-reliability.yml`](https://github.com/abhay-codes07/VOLO/blob/main/.github/workflows/volo-pr-reliability.yml).
+It runs the suite, posts a **sticky reliability comment** on the PR (verdict, per-metric
+pass/fail, cost), and fails the check on a `no-ship` verdict. Point `--agent` and the baseline at
+your agent and you're gating in CI.
+
+## Useful flags
+
+| Flag | What it does |
+|---|---|
+| `--summary-md PATH` | Write a Markdown reliability report (the PR-comment body). Also appended to `$GITHUB_STEP_SUMMARY`. |
+| `--judge heuristic\|ollama\|groq` | Choose the faithfulness judge. Default `heuristic` (free, deterministic). |
+| `--fail-under FLOAT` | Verdict threshold per aggregate metric (default `0.9`). |
+| `--max-cost-usd FLOAT` | Hard cap — fail the run if real API spend exceeds this. $0 under replay. |
+| `--n INT` | Repetitions per scenario. |
+
+Because replay costs ~$0, running the suite on every PR is free — that's the point.
+
+Next: [Fidelity →](/fidelity)

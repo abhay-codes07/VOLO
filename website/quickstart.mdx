@@ -1,0 +1,57 @@
+---
+title: "Quickstart"
+description: "Record an agent and score its reliability in under a minute."
+---
+
+<Note>Requires `uv ≥ 0.5` (and Node ≥ 20 for the dashboard).</Note>
+
+## Install
+
+```bash
+git clone https://github.com/abhay-codes07/VOLO.git
+cd VOLO
+make setup        # installs Python (uv) + JS toolchains, syncs deps
+uv run volo --help
+```
+
+## Fastest end-to-end try
+
+One command records an example agent and scores it:
+
+```bash
+uv run volo init examples.calc_agent:run --input '{"a":2,"b":3,"c":4}'
+```
+
+You'll see it record a baseline, replay it against the adversarial scenario suite
+(deterministic, $0), and print a ship / no-ship verdict with the four reliability metrics.
+
+## The primitives
+
+Record a run, then replay it deterministically:
+
+```bash
+uv run volo record examples.echo_agent:run --out ./.volo/recordings/echo.json
+uv run volo sim ./.volo/recordings/echo.json     # deterministic replay, $0
+```
+
+Score an agent against scenarios and get a verdict:
+
+```bash
+uv run volo run ./.volo/recordings/echo.json --agent examples.echo_agent:run
+```
+
+## Optional: a free LLM judge
+
+Faithfulness can be scored by the default heuristic (free, deterministic), local Ollama, or a
+free OpenAI-compatible API (Groq by default). Put a key in `.env`:
+
+```env
+VOLO_OPENAI_COMPAT_OPT_IN=true
+GROQ_API_KEY=gsk_...
+```
+
+```bash
+uv run volo run <recording> --agent <module:fn> --judge groq
+```
+
+Next: [Core concepts →](/concepts)

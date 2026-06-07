@@ -1,0 +1,42 @@
+---
+title: "Fidelity benchmark"
+description: "Does the simulator make things up? No — it flags. Measured proof."
+---
+
+The hard part of replaying against a *simulated* environment is inputs you never recorded. Volo
+either reconstructs them faithfully or **refuses and flags** — it never fabricates a tool result.
+We measure this with a deterministic, reproducible benchmark.
+
+## Method
+
+Record 2 seed queries to build the cache, derive 20 held-out queries by mutating the seeds with a
+fixed RNG (so none are in the cache), then run each both **live** and under a **simulated
+environment** and compare final outputs. Each query lands in one bucket:
+
+- **identical** — sim matched the live run (good)
+- **flagged** — sim refused because it couldn't faithfully answer (safe)
+- **wrong** — sim returned a *different* answer (the outcome we must never produce)
+
+## Results (`research_agent`, N = 20)
+
+| Configuration | Fidelity | Identical | Flagged | Wrong |
+|---|---|---|---|---|
+| Tier-1 only (cache replay) | 20% | 4 | 16 | **0** |
+| Tier-2 (a) — constrained-gen only | 20% | 4 | 16 | **0** |
+| Tier-2 (a)+(b) — source-informed | **100%** | 20 | 0 | **0** |
+
+<Note>
+The number that matters is the last column: **`Wrong = 0` in every configuration.** Plain
+cache-replay can only answer inputs it has already seen; source-informed Tier-2 reconstructs the
+un-recorded answers faithfully and hits 100% — and in no configuration does the simulator
+fabricate a result.
+</Note>
+
+## Reproduce it
+
+```bash
+uv run python benchmarks/fidelity.py
+```
+
+It writes machine-readable results to `benchmarks/results.json` and **exits non-zero if any
+configuration ever produces a wrong answer** — so it doubles as a guardrail, not just a report.

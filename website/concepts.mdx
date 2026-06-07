@@ -1,0 +1,48 @@
+---
+title: "Core concepts"
+description: "Recordings, the two simulator tiers, scenarios, and reliability metrics."
+---
+
+## Recording
+
+A **Recording** is one agent run, serialized: every model call, tool call, and decision, plus
+inputs, final output, and optional tool specs. It's the unit Volo replays. Secrets are redacted
+on capture. You produce one with `volo record` (or by wrapping your agent with the SDK proxies,
+or by importing an OpenTelemetry trace).
+
+## The two simulator tiers
+
+<CardGroup cols={2}>
+  <Card title="Tier-1 — cache replay">
+    Deterministic replay straight from the recording. Answers any input that appeared in the
+    recording; raises `ReplayMiss` for anything else.
+  </Card>
+  <Card title="Tier-2 — hybrid synthesis">
+    For un-recorded inputs: reconstruct a faithful response from tool specs/sources, else fall
+    back to local constrained generation, else **flag** (`Tier2Miss`).
+  </Card>
+</CardGroup>
+
+### The flag-on-unknown invariant
+
+This is the heart of Volo's trust model: **the simulator never fabricates a tool result.** If it
+can't reconstruct an un-recorded response faithfully, it refuses and flags the step rather than
+guessing. See [Fidelity](/fidelity) for the measured proof (`Wrong = 0`).
+
+## Scenarios
+
+Volo mutates a recording into realistic adversarial variants, each tagged by failure class:
+`drop_tool_result`, `corrupt_field`, `inject_latency`, `ambiguous_user_turn`, `prompt_injection`,
+`reorder_steps`, `long_horizon_repeat`.
+
+## Reliability metrics
+
+Each run is scored on four orthogonal dimensions, aggregated (5th-percentile) into a single
+**ship / no-ship** verdict:
+
+- **Trajectory determinism** — does the agent take the same path?
+- **Decision determinism** — does it make the same branching choices?
+- **Faithfulness** — is the final output grounded in the evidence it saw?
+- **Consistency under repetition** — stable across repeated runs?
+
+Next: [Gate it in CI →](/ci)
