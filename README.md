@@ -1,8 +1,12 @@
 # Volo
 
-> A **flight simulator for AI agents.** Record your agent once, replay it against a high-fidelity
-> simulated environment — deterministically, in CI, at near-zero API cost — to catch reliability
-> regressions before they reach production.
+> **Deterministic testing for AI agents — in CI, at ~$0.** Record your agent run once, replay it
+> against a high-fidelity simulated environment that never hallucinates, and block reliability
+> regressions in your pull requests. Like unit tests and `git bisect`, but for agents.
+
+Most agent "evals" re-run a live LLM-as-judge on every check — which costs API money *and is
+itself non-deterministic*. Volo flips that: it **replays a recorded run deterministically against
+mocked tools**, so the same PR check gives the same answer every time, for free.
 
 ---
 
