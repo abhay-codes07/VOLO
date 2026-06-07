@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Annotated
 
@@ -34,6 +35,12 @@ def ci_command(
         float | None,
         typer.Option("--max-cost-usd", help="Fail if this run's real API spend exceeds USD."),
     ] = None,
+    summary_md: Annotated[
+        Path | None,
+        typer.Option(
+            "--summary-md", help="Write a Markdown reliability summary (for PR comments)."
+        ),
+    ] = None,
     out: Annotated[
         Path,
         typer.Option("--out", help="Where to write the ReliabilityReport JSON."),
@@ -42,6 +49,7 @@ def ci_command(
     """Run the full pipeline and exit non-zero on regression — designed for CI gating."""
     from volo_cli.commands._cost import cost_cap_breach, cost_lines
     from volo_cli.commands._judge import resolve_judge
+    from volo_cli.commands._summary import report_markdown
     from volo_runner import OrchestratorConfig, orchestrate
 
     if not baseline.exists():
@@ -65,6 +73,16 @@ def ci_command(
 
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(report.to_json() + "\n", encoding="utf-8")
+
+    # Markdown summary: to a file (for a PR-comment step) and/or the GitHub job summary page.
+    markdown = report_markdown(report)
+    if summary_md is not None:
+        summary_md.parent.mkdir(parents=True, exist_ok=True)
+        summary_md.write_text(markdown, encoding="utf-8")
+    step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if step_summary:
+        with open(step_summary, "a", encoding="utf-8") as fh:
+            fh.write(markdown)
 
     badge = "PASS" if report.verdict == "ship" else "FAIL"
     typer.echo("::group::Volo reliability")
