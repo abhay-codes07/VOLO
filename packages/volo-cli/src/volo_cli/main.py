@@ -7,6 +7,7 @@ import typer
 from volo_cli.commands.ci import ci_command
 from volo_cli.commands.demo import demo_command
 from volo_cli.commands.diff import diff_command
+from volo_cli.commands.init import init_command
 from volo_cli.commands.record import record_command
 from volo_cli.commands.run import run_command
 from volo_cli.commands.scenarios import scenarios_command
@@ -44,6 +45,7 @@ def _root(
     load_env()  # pick up a local .env (GROQ_API_KEY, VOLO_* flags) before any command runs
 
 
+app.command("init", help="Quickstart: record an agent and score it in one step.")(init_command)
 app.command("record", help="Capture a live agent run as a Recording.")(record_command)
 app.command("sim", help="Boot the simulated environment from a recording.")(sim_command)
 app.command("scenarios", help="List the default scenario operator library.")(scenarios_command)
