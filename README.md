@@ -38,8 +38,10 @@ Volo makes agents testable the way regular software is testable:
 git clone https://github.com/abhay-codes07/VOLO.git
 cd VOLO
 make setup        # installs Python (uv) + JS toolchains, syncs deps
-make test         # full test suite
 uv run volo --help
+
+# fastest end-to-end try — record an example agent and score it in one step:
+uv run volo init examples.calc_agent:run --input '{"a":2,"b":3,"c":4}'
 ```
 
 A minimal record → replay loop on a bundled example:
@@ -68,6 +70,20 @@ GROQ_API_KEY=gsk_...
 ```bash
 uv run volo run <recording> --agent <module:fn> --judge groq
 ```
+
+## Does the simulator make things up? No — it flags.
+
+The hard part of replaying against a *simulated* environment is inputs you never recorded. Volo
+either reconstructs them faithfully (from tool specs/sources) or **refuses and flags** — it never
+fabricates a tool result. Measured on a held-out benchmark (deterministic, reproducible):
+
+| Configuration | Fidelity | Wrong answers |
+|---|---|---|
+| Tier-1 only (cache replay) | 20% | **0** |
+| Tier-2 (source-informed) | **100%** | **0** |
+
+`Wrong = 0` in every configuration is the whole point — see [`benchmarks/`](benchmarks/) and run
+`uv run python benchmarks/fidelity.py` yourself.
 
 ## Architecture
 
