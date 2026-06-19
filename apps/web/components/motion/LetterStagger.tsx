@@ -1,5 +1,7 @@
 "use client";
 
+import type { JSX } from "react";
+
 import { motion, type Variants } from "motion/react";
 
 /**
