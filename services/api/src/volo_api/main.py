@@ -23,7 +23,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from volo_api.auth import Principal, get_principal, require_principal
+from volo_api.auth import Principal, auth_required, get_principal, require_principal
+from volo_api.observability import configure_logging, install_request_logging
 from volo_api.streaming import stream_recording
 from volo_core import Recording
 from volo_core.env import load_env
@@ -170,11 +171,14 @@ class AgentVersionIn(BaseModel):
 
 def create_app() -> FastAPI:
     load_env()  # pick up a local .env before the app reads any VOLO_* / DB config
+    logger = configure_logging()
     app = FastAPI(
         title="Volo",
         version="0.1.0",
         description="Read-only API over local Volo recordings + reliability reports.",
     )
+    # Request logging is innermost so CORS (added next) wraps it and stays outermost.
+    install_request_logging(app, logger)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[
@@ -188,9 +192,15 @@ def create_app() -> FastAPI:
     )
 
     @app.get("/healthz")
-    def healthz(principal: Principal = Depends(get_principal)) -> dict[str, Any]:
-        del principal  # auth seam only — no body use yet
+    def healthz() -> dict[str, Any]:
+        # Unauthenticated on purpose: liveness/readiness probes must work even when
+        # VOLO_REQUIRE_AUTH is on. Returns no sensitive data.
         return {"status": "ok", "db": _db_active()}
+
+    logger.info(
+        "startup",
+        extra={"fields": {"db": _db_active(), "auth_required": auth_required()}},
+    )
 
     @app.get("/recordings")
     def list_recordings(
