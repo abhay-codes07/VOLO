@@ -1,0 +1,26 @@
+# Keep the Docker build context small and free of secrets / local state.
+.git
+.github
+.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/node_modules
+**/.next
+apps/web/playwright-report
+apps/web/test-results
+
+# Local data + secrets — never bake into an image.
+.volo
+.env
+*.env
+**/*.db
+
+# Docs / site — not needed by the api or web runtime images.
+website
+docs
+benchmarks
+examples
+tests
+*.md
