@@ -20,6 +20,7 @@ volo-reliability    = { workspace = true }
 volo-runner         = { workspace = true }
 volo-diff           = { workspace = true }
 volo-models         = { workspace = true }
+volo-mcp            = { workspace = true }
 volo-cli            = { workspace = true }
 volo-api            = { workspace = true }
 volo-langgraph      = { workspace = true }
@@ -64,6 +65,7 @@ files = [
     "packages/volo-reliability/src",
     "packages/volo-simulator/src",
     "packages/volo-diff/src",
+    "packages/volo-mcp/src",
     "packages/volo-runner/src",
     "packages/volo-cli/src",
     "services/api/src",
