@@ -1,0 +1,67 @@
+---
+title: "Production shadow & drift sentinel"
+description: "Bank redacted production traces as a regression corpus; replay it nightly; get paged before your users notice."
+---
+
+CI on every PR catches regressions you *push*. But agents also regress when the world moves —
+a model update, a tool API change, a prompt tweak that interacts badly with real traffic
+patterns. The shadow loop closes that gap:
+
+```
+production traffic ──▶ OTel traces ──▶ volo shadow pull ──▶ corpus (redacted, deduped)
+                                                               │
+                             nightly: volo shadow check ◀──────┘
+                             replays every banked trace against tonight's build
+                             exit 3 on drift → your pager, not your users
+```
+
+## Bank traces
+
+```bash
+# sample production OTel traces (JSONL / OTLP JSON / bare array) into the corpus
+uv run volo shadow pull traces/ --agent-name checkout-agent
+
+# what's banked
+uv run volo shadow list
+```
+
+Every trace goes through the **redaction pass before it touches disk** (API-key shapes, emails,
+configurable patterns) and is **deduplicated by content** — re-pulling the same window is
+idempotent. Banked traces are ordinary Volo recordings: committable fixtures.
+
+## Adopt incidents
+
+The best regression tests are your outages. One command turns a production failure trace into a
+permanent corpus entry:
+
+```bash
+uv run volo shadow adopt failure-2026-07-03.json     # tagged [incident]
+```
+
+## The nightly check
+
+```bash
+uv run volo shadow check --agent my_package.agent:run
+# first run:  "baseline established over N trace(s)"
+# every night after: replays the corpus through the full adversarial scenario suite,
+# compares the reliability surface to the baseline, and:
+#   exit 0 — no drift
+#   exit 3 — a dimension dropped > threshold (or a verdict flipped ship → no_ship)
+```
+
+Findings name the exact trace and dimension:
+
+```
+shadow check: DRIFT 0198...-a3f2 decision_determinism: 1.000 -> 0.500 (delta -0.500)
+shadow check: 2 drift finding(s) -> ALERT
+```
+
+`--threshold` tunes sensitivity (default 0.05), `--report drift.json` writes the machine-readable
+verdict, `--update-baseline` accepts the new surface as normal after an intentional change.
+
+## Run it every night
+
+A ready-made workflow lives at
+[`examples/workflows/volo-nightly.yml`](https://github.com/abhay-codes07/VOLO/blob/main/examples/workflows/volo-nightly.yml)
+— copy it into `.github/workflows/`, point `AGENT` at your entrypoint, commit your corpus and
+baseline. Replay is deterministic and offline, so the nightly job costs $0 in API spend.

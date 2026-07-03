@@ -69,6 +69,23 @@ Exit 1 if behavior changed — a CI regression gate for MCP-server authors.
 uv run volo mcp conformance rec.json [--report conf.json] -- <server command...>
 ```
 
+## `volo shadow pull` / `adopt` / `list`
+Bank production OTel traces (redacted before disk, deduplicated by content) or adopt a failure
+trace as a permanent regression. See [Production shadow](/shadow).
+```bash
+uv run volo shadow pull traces/ [--corpus ./.volo/corpus] [--agent-name NAME]
+uv run volo shadow adopt failure.json [--tag incident]
+uv run volo shadow list
+```
+
+## `volo shadow check`
+Replay the whole corpus against the current agent build; compare the reliability surface to the
+last snapshot. Exit 0 = no drift, **exit 3 = drift alert** (dimension dropped > threshold or a
+verdict flipped). First run establishes the baseline.
+```bash
+uv run volo shadow check --agent <module:fn> [--threshold 0.05] [--report drift.json] [--update-baseline]
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 

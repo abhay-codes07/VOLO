@@ -119,4 +119,17 @@ Goal: reliability tests as plain unit tests — Volo's engine behind pytest fixt
       `volo_scenario` (auto-parametrized over the scenario library; MCP recordings auto-select
       the fuzz library), `volo_run` (full scenarios → replay → score loop)
 - [x] `assert_ship` / `assert_no_ship` helpers that attach the reliability surface on failure
-- [ ] M13: production shadow ingest (OTel sampling → redaction → corpus bank)
+
+## v1.4.0 — M13: production shadow + drift sentinel ✅
+Goal: close the record→replay loop in production — every banked trace is a permanent
+regression test, replayed nightly; drift pages you before your users notice.
+
+- [x] `volo-shadow`: `CorpusBank` (indexed, content-digest deduplicated, redaction always runs
+      before disk) + `pull` (OTel sampling via the M7 import seam) + `adopt` (incident → fixture)
+- [x] Drift sentinel: `snapshot` (corpus × full scenario suite → reliability surface) +
+      `compare` (dimension drop > threshold, or ship→no_ship flip ⇒ finding)
+- [x] `volo shadow pull | adopt | list | check` — check exits 3 on drift (the alert), 2 on an
+      empty corpus; `--report` / `--update-baseline` / `--threshold`
+- [x] Nightly GitHub Action template (`examples/workflows/volo-nightly.yml`)
+- [x] Acceptance: a seeded nondeterminism regression trips the alert (test-proven)
+- [ ] M14: drift trends + dashboard screens + webhook/Slack alerting
