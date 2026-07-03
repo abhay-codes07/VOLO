@@ -8,6 +8,7 @@ authors = [{ name = "Volo contributors" }]
 dependencies = [
   "volo-core",
   "volo-sdk",
+  "volo-mcp",
   "typer>=0.12",
   "rich>=13.7",
   "python-dotenv>=1.0.1",

@@ -965,6 +965,7 @@ dependencies = [
     { name = "rich" },
     { name = "typer" },
     { name = "volo-core" },
+    { name = "volo-mcp" },
     { name = "volo-sdk" },
 ]
 
@@ -974,6 +975,7 @@ requires-dist = [
     { name = "rich", specifier = ">=13.7" },
     { name = "typer", specifier = ">=0.12" },
     { name = "volo-core", editable = "packages/volo-core" },
+    { name = "volo-mcp", editable = "packages/volo-mcp" },
     { name = "volo-sdk", editable = "packages/volo-sdk" },
 ]
 

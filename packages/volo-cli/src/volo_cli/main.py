@@ -8,6 +8,7 @@ from volo_cli.commands.ci import ci_command
 from volo_cli.commands.demo import demo_command
 from volo_cli.commands.diff import diff_command
 from volo_cli.commands.init import init_command
+from volo_cli.commands.mcp import mcp_app
 from volo_cli.commands.record import record_command
 from volo_cli.commands.run import run_command
 from volo_cli.commands.scenarios import scenarios_command
@@ -57,6 +58,7 @@ app.command("diff", help="Diff two runs and attribute regressions to a step + co
     diff_command
 )
 app.command("demo", help="Seed the data dir with showcase recordings + reports.")(demo_command)
+app.add_typer(mcp_app, name="mcp")
 
 
 if __name__ == "__main__":  # pragma: no cover

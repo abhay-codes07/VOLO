@@ -4,6 +4,7 @@ from volo_mcp.framing import FramingError, MessageBuffer, encode_message
 from volo_mcp.messages import SIM_MISS_CODE, tool_key
 from volo_mcp.recorder import MCPRecorder, MCPRecorderStats
 from volo_mcp.replay import MCPReplayServer
+from volo_mcp.stdio import StdioRecordProxy, serve_stdio
 
 __all__ = [
     "SIM_MISS_CODE",
@@ -12,6 +13,8 @@ __all__ = [
     "MCPRecorderStats",
     "MCPReplayServer",
     "MessageBuffer",
+    "StdioRecordProxy",
     "encode_message",
+    "serve_stdio",
     "tool_key",
 ]
