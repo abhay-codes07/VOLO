@@ -108,4 +108,15 @@ garbage?" — plus a regression gate for MCP-server authors.
       security, order_sensitivity), `--serve` for a live hostile world, `--report` JSON
 - [x] `volo_mcp.conformance` + `volo mcp conformance` — replay recorded requests against the
       LIVE server, diff answers (errors included), exit 1 on behavioral change
-- [ ] M12: pytest plugin (`pytest-volo`) — reliability tests as unit tests
+
+## v1.3.0 — M12: pytest plugin ✅
+Goal: reliability tests as plain unit tests — Volo's engine behind pytest fixtures.
+
+- [x] `pytest-volo` package, auto-registered via the `pytest11` entry point (ADR-0016)
+- [x] `@pytest.mark.volo_recording(path, *, tier=1, fuzz=None, seed=0)` marker +
+      `volo_recordings_dir` ini option
+- [x] Fixtures: `volo_recording` (baseline), `volo_env` (Tier-1/2 sim, active for the test),
+      `volo_scenario` (auto-parametrized over the scenario library; MCP recordings auto-select
+      the fuzz library), `volo_run` (full scenarios → replay → score loop)
+- [x] `assert_ship` / `assert_no_ship` helpers that attach the reliability surface on failure
+- [ ] M13: production shadow ingest (OTel sampling → redaction → corpus bank)

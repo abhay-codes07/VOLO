@@ -1,0 +1,72 @@
+---
+title: "Reliability tests as pytest tests"
+description: "pytest-volo: one marker, four fixtures — replay, adversarial worlds, and ship/no-ship verdicts inside your existing test suite."
+---
+
+`pytest-volo` puts Volo's whole engine behind ordinary pytest fixtures, so agent reliability
+checks live next to your unit tests and run in the same CI job — deterministically, offline, $0.
+
+```bash
+uv add --dev pytest-volo   # (or: pip install pytest-volo)
+```
+
+The plugin registers itself automatically. One marker binds a recording to a test:
+
+```python
+import pytest
+
+@pytest.mark.volo_recording("recordings/checkout.json")
+def test_agent_replays_cleanly(volo_env):
+    result = run_my_agent({"order": 42})     # volo proxies route to the sim
+    assert result["status"] == "ok"
+```
+
+## The fixtures
+
+### `volo_recording`
+The loaded baseline `Recording` — inspect steps, final output, metadata.
+
+### `volo_env`
+A simulated environment over the baseline, already installed as the active environment for the
+test's duration. Tier-1 replay by default; `@pytest.mark.volo_recording("r.json", tier=2)` gets
+the source-informed Tier-2 simulator (which flags, never hallucinates, on unrecorded inputs).
+
+### `volo_scenario` — one test per hostile world
+Ask for `volo_scenario` and the test is parametrized over the adversarial scenario library:
+
+```python
+@pytest.mark.volo_recording("recordings/checkout.json")
+def test_survives_adversity(volo_scenario):
+    # runs 7 times: drop_tool_result, corrupt_field, inject_latency, ...
+    result = run_my_agent({"order": 42})
+    assert result["status"] in ("ok", "refused")   # degraded gracefully, never wrong
+```
+
+Recordings made with `volo mcp record` are auto-detected and get the
+[MCP fuzz library](/mcp) instead (4 envelope-aware operators); force a choice with
+`fuzz="mcp"` or `fuzz="default"`. Each param exposes `.scenario` (operator metadata),
+`.recording` (the mutated world), and `.env`.
+
+### `volo_run` — the full verdict in one call
+
+```python
+from pytest_volo import assert_ship
+
+@pytest.mark.volo_recording("recordings/checkout.json")
+def test_ships(volo_run):
+    report = volo_run(my_agent, n_runs=3, fail_under=0.9)
+    assert_ship(report)   # fails with the full reliability surface attached
+```
+
+`assert_ship` / `assert_no_ship` print the aggregate and per-scenario metrics on failure, so a
+red CI run tells you *which* failure class regressed, not just that something did.
+
+## Options
+
+- `volo_recordings_dir` (ini): base directory for relative marker paths.
+  ```toml
+  [tool.pytest.ini_options]
+  volo_recordings_dir = "tests/recordings"
+  ```
+- Marker kwargs: `tier=1|2`, `fuzz="mcp"|"default"`, `seed=<int>` (mutations are seeded —
+  the same seed produces the same hostile worlds on every run).

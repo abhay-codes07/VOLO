@@ -71,6 +71,25 @@ GROQ_API_KEY=gsk_...
 uv run volo run <recording> --agent <module:fn> --judge groq
 ```
 
+## Or just write pytest tests
+
+`pytest-volo` puts the whole engine behind ordinary fixtures — one marker binds a recording,
+`volo_scenario` parametrizes the test over every adversarial world, and `volo_run` returns the
+ship/no-ship verdict:
+
+```python
+import pytest
+from pytest_volo import assert_ship
+
+@pytest.mark.volo_recording("recordings/checkout.json")
+def test_survives_adversity(volo_scenario):      # runs once per hostile world
+    assert run_my_agent({"order": 42})["status"] in ("ok", "refused")
+
+@pytest.mark.volo_recording("recordings/checkout.json")
+def test_ships(volo_run):
+    assert_ship(volo_run(run_my_agent, n_runs=3))
+```
+
 ## Deterministic tests for your MCP stack
 
 Volo can record and replay **Model Context Protocol servers** — so agents that depend on MCP
