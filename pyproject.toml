@@ -22,6 +22,7 @@ volo-diff           = { workspace = true }
 volo-models         = { workspace = true }
 volo-mcp            = { workspace = true }
 volo-cli            = { workspace = true }
+pytest-volo         = { workspace = true }
 volo-api            = { workspace = true }
 volo-langgraph      = { workspace = true }
 volo-openai-agents  = { workspace = true }
@@ -67,13 +68,16 @@ files = [
     "packages/volo-diff/src",
     "packages/volo-mcp/src",
     "packages/volo-runner/src",
+    "packages/pytest-volo/src",
     "packages/volo-cli/src",
     "services/api/src",
 ]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = "-ra --strict-markers"
+# -p pytester: enables the pytester fixture used by packages/pytest-volo's own tests
+# (pytest forbids `pytest_plugins` in non-root conftests, so it must be enabled here).
+addopts = "-ra --strict-markers -p pytester"
 testpaths = ["packages", "services", "integrations", "tests"]
 # All workspace packages get installed editable via `uv sync --all-packages`, so they're already
 # importable. We add the repo root so `import examples.echo_agent` resolves without install.
