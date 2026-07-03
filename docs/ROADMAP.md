@@ -132,4 +132,16 @@ regression test, replayed nightly; drift pages you before your users notice.
       empty corpus; `--report` / `--update-baseline` / `--threshold`
 - [x] Nightly GitHub Action template (`examples/workflows/volo-nightly.yml`)
 - [x] Acceptance: a seeded nondeterminism regression trips the alert (test-proven)
-- [ ] M14: drift trends + dashboard screens + webhook/Slack alerting
+
+## v1.5.0 — M14: drift trends + dashboard + alerting ✅
+Goal: the sentinel's memory — reliability over time, visible and loud.
+
+- [x] `SnapshotHistory` (append-only JSONL; every `shadow check` appends snapshot + drift verdict)
+      with fleet-average and per-trace trend series (ADR-0018)
+- [x] `volo shadow trend` — ASCII sparkline per dimension; `--trace` follows one banked trace
+- [x] Webhook alerting on `shadow check` (`--webhook` / `VOLO_SHADOW_WEBHOOK`) — Slack-compatible
+      payload, best-effort delivery (never masks the exit-3 alert)
+- [x] API: `GET /shadow/history` (+ per-trace) — the trend feed
+- [x] Dashboard: `/shadow` screen — fleet-average sparklines per dimension, drifted-night chips,
+      banked-corpus table (bible §8.3 aesthetic, reuses the CI sparkline)
+- [ ] M15: red-team corpus v1 (attack scenarios + safety annex on the report)

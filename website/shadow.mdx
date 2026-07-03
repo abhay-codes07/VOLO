@@ -59,6 +59,36 @@ shadow check: 2 drift finding(s) -> ALERT
 `--threshold` tunes sensitivity (default 0.05), `--report drift.json` writes the machine-readable
 verdict, `--update-baseline` accepts the new surface as normal after an intentional change.
 
+## Trends: reliability over time
+
+Every check appends its snapshot to a JSONL history (default `./.volo/shadow-history.jsonl`), so
+the surface becomes a time series for free:
+
+```bash
+uv run volo shadow trend
+# shadow trend: fleet average (12 trace(s)) over 30 check(s)
+# shadow trend: decision_determinism            [@@@@@@@@@@@@@@@@@@@@@@@@=====] latest 0.500
+# shadow trend: faithfulness                    [@@@@@@@@@@@@@@@@@@@@@@@@@@@@@] latest 0.940
+# shadow trend: 5 check(s) drifted
+```
+
+`--trace <run_id>` follows one banked trace instead of the fleet average. The same history feeds
+the dashboard: the **Shadow** screen (`/shadow`) plots each dimension's fleet average per check,
+flags drifted nights, and lists the banked corpus.
+
+## Alerting
+
+Exit code 3 is the primary alert — any scheduler can page on it. For a loud path, add a webhook
+(Slack-compatible: incoming webhooks read the `text` field; the full drift report rides along
+under `volo`):
+
+```bash
+uv run volo shadow check --agent my_package.agent:run \
+  --webhook "$SLACK_WEBHOOK_URL"        # or set VOLO_SHADOW_WEBHOOK
+```
+
+Webhook delivery is best-effort by design: a dead webhook never masks the exit-3 alert itself.
+
 ## Run it every night
 
 A ready-made workflow lives at

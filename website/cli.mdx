@@ -81,9 +81,18 @@ uv run volo shadow list
 ## `volo shadow check`
 Replay the whole corpus against the current agent build; compare the reliability surface to the
 last snapshot. Exit 0 = no drift, **exit 3 = drift alert** (dimension dropped > threshold or a
-verdict flipped). First run establishes the baseline.
+verdict flipped). First run establishes the baseline. Every check appends to the trend history;
+`--webhook` (or `VOLO_SHADOW_WEBHOOK`) POSTs a Slack-compatible alert on drift.
 ```bash
-uv run volo shadow check --agent <module:fn> [--threshold 0.05] [--report drift.json] [--update-baseline]
+uv run volo shadow check --agent <module:fn> [--threshold 0.05] [--report drift.json] \
+  [--update-baseline] [--history ./.volo/shadow-history.jsonl] [--webhook URL]
+```
+
+## `volo shadow trend`
+Reliability-over-time from the check history: one ASCII sparkline per dimension, fleet average
+by default, `--trace <run_id>` for a single banked trace. Feeds the `/shadow` dashboard screen.
+```bash
+uv run volo shadow trend [--history PATH] [--trace RUN_ID]
 ```
 
 ## `volo scenarios`
