@@ -40,6 +40,20 @@ Diff two runs and attribute the regression to a step ("git bisect for agents").
 uv run volo diff <baseline.json> <candidate.json>
 ```
 
+## `volo mcp record`
+Transparent proxy between an MCP client and the real server; saves the session as a Recording.
+stdout stays pure protocol — diagnostics go to stderr.
+```bash
+uv run volo mcp record --out rec.json [--server-name NAME] -- <server command...>
+```
+
+## `volo mcp serve`
+Simulated MCP server replayed from a recording — offline, byte-identical, un-recorded inputs
+return JSON-RPC error `-32042` instead of a hallucination. See [Test MCP servers](/mcp).
+```bash
+uv run volo mcp serve rec.json
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 

@@ -20,7 +20,7 @@
           },
           {
             "group": "Guides",
-            "pages": ["concepts", "ci", "fidelity"]
+            "pages": ["concepts", "ci", "mcp", "fidelity"]
           },
           {
             "group": "Reference",

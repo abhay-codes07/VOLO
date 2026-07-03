@@ -1,0 +1,96 @@
+---
+title: "Test MCP servers deterministically"
+description: "Record any Model Context Protocol server once, then replay it in CI — offline, byte-identical, $0."
+---
+
+Agents increasingly reach their tools through **MCP (Model Context Protocol)** servers — GitHub,
+filesystems, databases, browsers. That makes agent tests flaky and expensive for a familiar
+reason: every test run hits the real server, with real credentials, real latency, and real
+nondeterminism.
+
+Volo fixes this the same way it fixes model calls: **record the traffic once, replay it forever**.
+
+## How it works
+
+```
+record:   MCP client ──▶ volo mcp record ──▶ real server        (transparent proxy, bytes untouched)
+                              │
+                              ▼
+                        recording.json
+                              │
+replay:   MCP client ──▶ volo mcp serve  ──▶ (nothing)           (simulated server, offline, $0)
+```
+
+- `volo mcp record` sits invisibly between your client and the real server: every byte passes
+  through unmodified while both directions are captured into an ordinary Volo Recording.
+- `volo mcp serve` then *impersonates* the server from that recording. Matching is by **tool name
+  + arguments** (not request ids), so your test session doesn't need to mirror the recorded one
+  message-for-message.
+- Recorded protocol **errors replay as errors** — a server's failure behavior is part of what you
+  regression-test.
+- Anything un-recorded returns JSON-RPC error **`-32042`** ("sim miss"). The simulator never
+  invents a tool result — a miss is a visible flag, not a plausible hallucination.
+
+## Try it in 60 seconds
+
+The repo bundles a dependency-free example server (`examples/mcp_calc_server.py`):
+
+```bash
+# 1) record a short session through the proxy
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"add","arguments":{"a":2,"b":40}}}' \
+| uv run volo mcp record --out calc.json -- python examples/mcp_calc_server.py
+
+# 2) replay it offline — note the fresh request id still matches
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"add","arguments":{"a":2,"b":40}}}' \
+| uv run volo mcp serve calc.json
+# {"jsonrpc":"2.0","id":1,"result":{"content":[{"type":"text","text":"42"}],"isError":false}}
+```
+
+Both commands keep **stdout as the pure protocol channel**; diagnostics go to stderr.
+
+## Recording a real server
+
+Wrap the server command your MCP client already launches. For a client configured with JSON
+(Claude Desktop-style config, IDEs, agent frameworks), swap the `command`:
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "uv",
+      "args": [
+        "run", "volo", "mcp", "record", "--out", "github.json", "--",
+        "npx", "-y", "@modelcontextprotocol/server-github"
+      ]
+    }
+  }
+}
+```
+
+Use the client normally once; when it disconnects, `github.json` holds the session. In CI, point
+the same client at `volo mcp serve github.json` instead — no token, no network, no flakes.
+
+<Warning>
+Recordings can contain real data returned by your tools. Volo's redaction pass runs on save by
+default, but review a recording before committing it, exactly as you would a VCR/cassette
+fixture.
+</Warning>
+
+## Fidelity beyond exact replay
+
+A recorded `tools/list` response is automatically distilled into per-tool **schemas**
+(`inputSchema` / `outputSchema`), which is exactly what Volo's
+[Tier-2 simulator](/fidelity) consumes. That means near-miss inputs — a query you didn't record
+but whose tool declares a response shape — can be synthesized under the same guarantee:
+**validate or flag, never hallucinate**.
+
+## What's next
+
+MCP **fuzzing** is the next milestone: Volo's adversarial scenario operators
+(corrupt fields, inject latency, prompt-inject tool outputs…) applied at the MCP boundary, plus a
+conformance report for MCP server authors. Track progress in the
+[roadmap](https://github.com/abhay-codes07/VOLO/blob/main/docs/ROADMAP.md).

@@ -71,6 +71,37 @@ GROQ_API_KEY=gsk_...
 uv run volo run <recording> --agent <module:fn> --judge groq
 ```
 
+## Deterministic tests for your MCP stack
+
+Volo can record and replay **Model Context Protocol servers** — so agents that depend on MCP
+tools get deterministic integration tests with no network, no credentials, and no API cost.
+
+Put the recording proxy between any MCP client and the real server once:
+
+```bash
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"add","arguments":{"a":2,"b":40}}}' \
+| uv run volo mcp record --out calc.json -- python examples/mcp_calc_server.py
+```
+
+From then on, replay the recording as a **simulated MCP server** — byte-identical answers,
+fully offline:
+
+```bash
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"add","arguments":{"a":2,"b":40}}}' \
+| uv run volo mcp serve calc.json
+# {"jsonrpc":"2.0","id":1,"result":{"content":[{"type":"text","text":"42"}],"isError":false}}
+```
+
+Replay matches on the *tool name + arguments* (not request ids), recorded protocol errors replay
+as errors, and anything un-recorded returns JSON-RPC error `-32042` — the simulator **never
+invents a tool result**. Recorded `tools/list` responses are auto-distilled into tool schemas,
+so the Tier-2 simulator can take over for near-miss inputs. Full guide: `volo mcp --help` or the
+[docs site](website/).
+
 ## Does the simulator make things up? No — it flags.
 
 The hard part of replaying against a *simulated* environment is inputs you never recorded. Volo
@@ -98,7 +129,7 @@ Capture SDK → Environment Simulator → Scenario Generator → Reliability Eng
 ## Repo layout
 
 ```
-packages/       # 9 Python packages (uv workspace) — one per subsystem + core + CLI
+packages/       # 10 Python packages (uv workspace) — one per subsystem + core + CLI + MCP
 services/api/   # FastAPI backend (local dashboard + cloud seam)
 apps/web/       # Next.js dashboard
 integrations/   # framework adapters: langgraph, openai_agents, crewai

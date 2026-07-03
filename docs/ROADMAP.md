@@ -86,3 +86,16 @@ Goal: the screenshots that ship the product.
 - [ ] Docs site (deferred — deployment/§13)
 - [ ] Landing page with the 20-second demo gif (deferred — marketing)
 - [ ] Public OSS launch (deferred — §13)
+
+## v1.1.0 — M10: MCP simulation 🟨 (record/replay + CLI + docs shipped)
+Goal: deterministic record/replay of Model Context Protocol servers — agents that reach their
+tools through MCP get offline, byte-identical integration tests (ADR-0014).
+
+- [x] `volo-mcp` core: ndjson JSON-RPC framing, method→cache-key taxonomy, result/error envelope
+- [x] `MCPRecorder` (auto `ToolSpec` harvest from `tools/list`) + `MCPReplayServer`
+      (un-recorded input → JSON-RPC `-32042`, never hallucinate)
+- [x] stdio transport: transparent recording proxy + replay serve-loop
+- [x] `volo mcp record | serve` CLI, `examples/mcp_calc_server.py`, byte-faithful e2e test
+- [x] Docs: README quickstart, docs-site guide, CLI reference
+- [ ] M11: MCP fuzz — scenario operators at the MCP boundary (`volo mcp fuzz`) + conformance
+      report for MCP-server authors
