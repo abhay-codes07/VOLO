@@ -72,6 +72,7 @@ def test_check_baseline_then_ok_then_alert(tmp_path: Path, monkeypatch: pytest.M
     _write_agents(tmp_path, monkeypatch)
     corpus = tmp_path / "corpus"
     baseline = tmp_path / "baseline.json"
+    history = tmp_path / "history.jsonl"
     runner.invoke(
         app, ["shadow", "pull", str(_write_trace(tmp_path / "t.jsonl")), "--corpus", str(corpus)]
     )
@@ -88,6 +89,8 @@ def test_check_baseline_then_ok_then_alert(tmp_path: Path, monkeypatch: pytest.M
                 str(corpus),
                 "--baseline",
                 str(baseline),
+                "--history",
+                str(history),
                 *extra,
             ],
         )
@@ -106,6 +109,82 @@ def test_check_baseline_then_ok_then_alert(tmp_path: Path, monkeypatch: pytest.M
     assert "ALERT" in alert.output
     blob = json.loads(report.read_text(encoding="utf-8"))
     assert blob["drifted"] is True and blob["findings"]
+
+    # every check appended to the trend history (M14)
+    lines = [ln for ln in history.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    assert len(lines) == 3
+    assert json.loads(lines[0])["drift"] is None  # baseline night
+    assert json.loads(lines[2])["drift"]["drifted"] is True
+
+    # and the trend command renders one sparkline per dimension
+    trend = runner.invoke(app, ["shadow", "trend", "--history", str(history)])
+    assert trend.exit_code == 0, trend.output
+    assert "decision_determinism" in trend.output
+    assert "over 3 check(s)" in trend.output
+    assert "1 check(s) drifted" in trend.output
+
+
+def test_check_fires_webhook_on_drift(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import threading
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    received: list[dict[str, Any]] = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            body = self.rfile.read(int(self.headers.get("Content-Length", "0")))
+            received.append(json.loads(body))
+            self.send_response(200)
+            self.end_headers()
+
+        def log_message(self, *args: Any) -> None:
+            del args
+
+    server = HTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+
+    _write_agents(tmp_path, monkeypatch)
+    corpus = tmp_path / "corpus"
+    runner.invoke(
+        app, ["shadow", "pull", str(_write_trace(tmp_path / "t.jsonl")), "--corpus", str(corpus)]
+    )
+
+    def check(agent: str) -> Any:
+        return runner.invoke(
+            app,
+            [
+                "shadow",
+                "check",
+                "--agent",
+                agent,
+                "--corpus",
+                str(corpus),
+                "--baseline",
+                str(tmp_path / "b.json"),
+                "--history",
+                str(tmp_path / "h.jsonl"),
+                "--webhook",
+                f"http://127.0.0.1:{server.server_port}/hook",
+            ],
+        )
+
+    try:
+        assert check("shadow_agent_stable:run").exit_code == 0  # baseline; no webhook
+        assert received == []
+        alert = check("shadow_agent_regressed:run")
+        assert alert.exit_code == 3, alert.output
+        assert "webhook notified (200)" in alert.output
+    finally:
+        server.shutdown()
+
+    assert received and "Volo drift sentinel" in received[0]["text"]
+    assert received[0]["volo"]["drifted"] is True
+
+
+def test_trend_without_history_exits_2(tmp_path: Path) -> None:
+    res = runner.invoke(app, ["shadow", "trend", "--history", str(tmp_path / "none.jsonl")])
+    assert res.exit_code == 2
+    assert "no history" in res.output
 
 
 def test_check_empty_corpus_exits_2(tmp_path: Path) -> None:

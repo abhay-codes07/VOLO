@@ -44,6 +44,7 @@ from volo_core.storage import (
 from volo_diff import compute_diff
 from volo_reliability import ReliabilityReport
 from volo_scenarios import default_library
+from volo_shadow import CorpusBank, SnapshotHistory
 
 # ── storage strategy ────────────────────────────────────────────────────────
 
@@ -397,6 +398,40 @@ def create_app() -> FastAPI:
                 }
             )
         return out
+
+    @app.get("/shadow/history")
+    def shadow_history(
+        principal: Principal = Depends(get_principal),
+    ) -> dict[str, Any]:
+        """Drift-sentinel trend data: fleet series + banked-trace inventory (M14)."""
+        del principal
+        history = SnapshotHistory(_data_dir() / "shadow-history.jsonl")
+        bank = CorpusBank(_data_dir() / "corpus")
+        return {
+            "checks": history.fleet_series(),
+            "corpus": [
+                {
+                    "run_id": e.run_id,
+                    "source": e.source,
+                    "agent_name": e.agent_name,
+                    "steps": e.steps,
+                    "added_at": e.added_at,
+                }
+                for e in bank.entries()
+            ],
+        }
+
+    @app.get("/shadow/history/{run_id}")
+    def shadow_trace_history(
+        run_id: str,
+        principal: Principal = Depends(get_principal),
+    ) -> dict[str, Any]:
+        del principal
+        history = SnapshotHistory(_data_dir() / "shadow-history.jsonl")
+        series = history.trace_series(run_id)
+        if not series:
+            raise HTTPException(status_code=404, detail=f"no shadow history for {run_id!r}")
+        return {"run_id": run_id, "checks": series}
 
     @app.get("/diffs/{stem}")
     def get_diff(

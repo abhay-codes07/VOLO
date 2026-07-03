@@ -19,7 +19,10 @@ import typer
 
 DEFAULT_CORPUS = Path(".volo") / "corpus"
 DEFAULT_BASELINE = Path(".volo") / "shadow-baseline.json"
+DEFAULT_HISTORY = Path(".volo") / "shadow-history.jsonl"
 DRIFT_EXIT_CODE = 3
+
+_SPARK_RAMP = " .:-=+*#@"  # ASCII on purpose: Windows consoles mangle unicode block chars
 
 shadow_app = typer.Typer(
     name="shadow",
@@ -107,10 +110,22 @@ def shadow_check(
     report: Annotated[
         Path | None, typer.Option("--report", help="Also write the JSON drift report.")
     ] = None,
+    history: Annotated[
+        Path,
+        typer.Option("--history", help="JSONL trend history; every check appends a snapshot."),
+    ] = DEFAULT_HISTORY,
+    webhook: Annotated[
+        str | None,
+        typer.Option(
+            "--webhook",
+            envvar="VOLO_SHADOW_WEBHOOK",
+            help="POST the drift report here on alert (Slack-compatible payload).",
+        ),
+    ] = None,
 ) -> None:
     """Replay the corpus against the current agent; exit 3 if the surface drifted."""
     from volo_runner import resolve_agent
-    from volo_shadow import CorpusBank, compare, snapshot
+    from volo_shadow import CorpusBank, SnapshotHistory, compare, snapshot
 
     bank = CorpusBank(corpus)
     if not bank.entries():
@@ -122,6 +137,7 @@ def shadow_check(
     if not baseline.exists():
         baseline.parent.mkdir(parents=True, exist_ok=True)
         baseline.write_text(json.dumps(current, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        SnapshotHistory(history).append(current)
         typer.echo(
             f"shadow check: baseline established over {len(current['entries'])} trace(s) "
             f"-> {baseline}"
@@ -130,6 +146,7 @@ def shadow_check(
 
     base = json.loads(baseline.read_text(encoding="utf-8"))
     drift = compare(base, current, threshold=threshold)
+    SnapshotHistory(history).append(current, drift=drift)
 
     for f in drift.findings:
         typer.echo(
@@ -147,6 +164,67 @@ def shadow_check(
         typer.echo(f"shadow check: baseline updated -> {baseline}")
 
     if drift.drifted:
+        if webhook:
+            _fire_webhook(webhook, drift, agent)
         typer.echo(f"shadow check: {len(drift.findings)} drift finding(s) -> ALERT")
         raise typer.Exit(DRIFT_EXIT_CODE)
     typer.echo(f"shadow check: no drift across {len(current['entries'])} trace(s) -> OK")
+
+
+def _fire_webhook(url: str, drift: object, agent: str) -> None:
+    """Best-effort alert delivery — a dead webhook must not mask the exit-3 alert itself."""
+    from volo_shadow import DriftReport, post_webhook, webhook_payload
+
+    assert isinstance(drift, DriftReport)
+    try:
+        status = post_webhook(url, webhook_payload(drift, agent=agent))
+        typer.echo(f"shadow check: webhook notified ({status})")
+    except Exception as exc:
+        typer.echo(f"shadow check: webhook delivery FAILED ({exc}) — alerting via exit code only")
+
+
+@shadow_app.command("trend")
+def shadow_trend(
+    history: Annotated[
+        Path, typer.Option("--history", help="JSONL trend history written by `shadow check`.")
+    ] = DEFAULT_HISTORY,
+    trace: Annotated[
+        str | None,
+        typer.Option("--trace", help="Show one banked trace instead of the fleet average."),
+    ] = None,
+) -> None:
+    """Reliability-over-time from the check history, one sparkline per dimension."""
+    from volo_shadow import SnapshotHistory
+
+    hist = SnapshotHistory(history)
+    series = hist.trace_series(trace) if trace else hist.fleet_series()
+    if not series:
+        typer.echo(f"shadow trend: no history at {history} — run `volo shadow check` first")
+        raise typer.Exit(2)
+
+    dimensions = sorted({dim for point in series for dim in point["aggregate"]})
+    label = trace or f"fleet average ({series[-1].get('traces', '?')} trace(s))"
+    typer.echo(f"shadow trend: {label} over {len(series)} check(s)")
+    for dim in dimensions:
+        values = [
+            float(v) if isinstance(v, int | float) else None
+            for v in (point["aggregate"].get(dim) for point in series)
+        ]
+        last = values[-1]
+        last_txt = f"{last:.3f}" if last is not None else "-"
+        typer.echo(f"shadow trend: {dim:32} [{_spark(values)}] latest {last_txt}")
+    drifted_nights = sum(1 for point in series if point.get("drifted"))
+    if not trace and drifted_nights:
+        typer.echo(f"shadow trend: {drifted_nights} check(s) drifted")
+
+
+def _spark(values: list[float | None]) -> str:
+    """Map 0..1 values onto the ASCII ramp; unknown values render as '?'."""
+    chars = []
+    for v in values:
+        if v is None:
+            chars.append("?")
+        else:
+            clamped = max(0.0, min(1.0, v))
+            chars.append(_SPARK_RAMP[round(clamped * (len(_SPARK_RAMP) - 1))])
+    return "".join(chars)

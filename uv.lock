@@ -963,6 +963,7 @@ dependencies = [
     { name = "volo-diff" },
     { name = "volo-reliability" },
     { name = "volo-scenarios" },
+    { name = "volo-shadow" },
 ]
 
 [package.optional-dependencies]
@@ -980,6 +981,7 @@ requires-dist = [
     { name = "volo-diff", editable = "packages/volo-diff" },
     { name = "volo-reliability", editable = "packages/volo-reliability" },
     { name = "volo-scenarios", editable = "packages/volo-scenarios" },
+    { name = "volo-shadow", editable = "packages/volo-shadow" },
 ]
 provides-extras = ["serve"]
 

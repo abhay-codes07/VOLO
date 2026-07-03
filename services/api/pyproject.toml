@@ -9,6 +9,7 @@ dependencies = [
   "volo-reliability",
   "volo-diff",
   "volo-scenarios",
+  "volo-shadow",
   "fastapi>=0.115",
   "sqlmodel>=0.0.21",
   "python-dotenv>=1.0.1",
