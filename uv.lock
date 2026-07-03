@@ -22,6 +22,7 @@ members = [
     "volo-runner",
     "volo-scenarios",
     "volo-sdk",
+    "volo-shadow",
     "volo-simulator",
     "volo-workspace",
 ]
@@ -993,6 +994,7 @@ dependencies = [
     { name = "volo-core" },
     { name = "volo-mcp" },
     { name = "volo-sdk" },
+    { name = "volo-shadow" },
 ]
 
 [package.metadata]
@@ -1003,6 +1005,7 @@ requires-dist = [
     { name = "volo-core", editable = "packages/volo-core" },
     { name = "volo-mcp", editable = "packages/volo-mcp" },
     { name = "volo-sdk", editable = "packages/volo-sdk" },
+    { name = "volo-shadow", editable = "packages/volo-shadow" },
 ]
 
 [[package]]
@@ -1160,6 +1163,25 @@ dependencies = [
 requires-dist = [
     { name = "pydantic", specifier = ">=2.9" },
     { name = "volo-core", editable = "packages/volo-core" },
+]
+
+[[package]]
+name = "volo-shadow"
+version = "0.1.0"
+source = { editable = "packages/volo-shadow" }
+dependencies = [
+    { name = "volo-core" },
+    { name = "volo-reliability" },
+    { name = "volo-runner" },
+    { name = "volo-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "volo-core", editable = "packages/volo-core" },
+    { name = "volo-reliability", editable = "packages/volo-reliability" },
+    { name = "volo-runner", editable = "packages/volo-runner" },
+    { name = "volo-sdk", editable = "packages/volo-sdk" },
 ]
 
 [[package]]

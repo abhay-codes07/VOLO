@@ -1,0 +1,14 @@
+[project]
+name = "volo-shadow"
+version = "0.1.0"
+description = "Volo production shadow — trace corpus bank + nightly drift sentinel."
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+dependencies = ["volo-core", "volo-sdk", "volo-runner", "volo-reliability"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/volo_shadow"]

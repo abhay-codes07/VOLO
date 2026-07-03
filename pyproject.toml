@@ -21,6 +21,7 @@ volo-runner         = { workspace = true }
 volo-diff           = { workspace = true }
 volo-models         = { workspace = true }
 volo-mcp            = { workspace = true }
+volo-shadow         = { workspace = true }
 volo-cli            = { workspace = true }
 pytest-volo         = { workspace = true }
 volo-api            = { workspace = true }
@@ -68,6 +69,7 @@ files = [
     "packages/volo-diff/src",
     "packages/volo-mcp/src",
     "packages/volo-runner/src",
+    "packages/volo-shadow/src",
     "packages/pytest-volo/src",
     "packages/volo-cli/src",
     "services/api/src",

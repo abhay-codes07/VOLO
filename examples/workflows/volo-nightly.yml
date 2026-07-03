@@ -1,0 +1,52 @@
+# Volo drift sentinel — nightly corpus replay (template).
+#
+# Copy into your repo's .github/workflows/, set AGENT below, and commit your corpus
+# (./.volo/corpus — banked traces are redacted fixtures) plus the baseline snapshot.
+# The job replays every banked production trace against tonight's build and fails
+# (exit 3) if any reliability dimension drifted — you find out before your users do.
+
+name: volo-nightly
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # nightly; pick your own minute to be kind to the queue
+  workflow_dispatch: {}
+
+env:
+  AGENT: "my_package.agent:run" # ← your agent entrypoint (module:callable)
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install project
+        run: uv sync
+
+      - name: Replay the corpus, alert on drift
+        run: |
+          uv run volo shadow check \
+            --agent "$AGENT" \
+            --corpus ./.volo/corpus \
+            --baseline ./.volo/shadow-baseline.json \
+            --report ./drift-report.json \
+            --threshold 0.05
+
+      - name: Upload drift report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report
+          path: drift-report.json
+          if-no-files-found: ignore
+
+      # Optional: page somebody. Exit code 3 already failed the job; this makes it loud.
+      # - name: Notify Slack
+      #   if: failure()
+      #   run: curl -X POST -H 'Content-type: application/json' \
+      #     --data '{"text":"Volo drift sentinel: reliability drifted — see drift-report artifact"}' \
+      #     ${{ secrets.SLACK_WEBHOOK_URL }}
