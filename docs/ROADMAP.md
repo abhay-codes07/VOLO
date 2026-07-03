@@ -97,5 +97,15 @@ tools through MCP get offline, byte-identical integration tests (ADR-0014).
 - [x] stdio transport: transparent recording proxy + replay serve-loop
 - [x] `volo mcp record | serve` CLI, `examples/mcp_calc_server.py`, byte-faithful e2e test
 - [x] Docs: README quickstart, docs-site guide, CLI reference
-- [ ] M11: MCP fuzz — scenario operators at the MCP boundary (`volo mcp fuzz`) + conformance
-      report for MCP-server authors
+
+## v1.2.0 — M11: MCP fuzz + conformance ✅
+Goal: adversarial testing at the MCP boundary — "what does my agent do when the server returns
+garbage?" — plus a regression gate for MCP-server authors.
+
+- [x] `volo_mcp.fuzz`: scenario operators applied inside the `{"result": ...}` envelope;
+      handshake/meta steps and recorded protocol errors stay byte-intact; seeded/reproducible
+- [x] `volo mcp fuzz` — one servable mutated recording per operator (resilience, robustness,
+      security, order_sensitivity), `--serve` for a live hostile world, `--report` JSON
+- [x] `volo_mcp.conformance` + `volo mcp conformance` — replay recorded requests against the
+      LIVE server, diff answers (errors included), exit 1 on behavioral change
+- [ ] M12: pytest plugin (`pytest-volo`) — reliability tests as unit tests

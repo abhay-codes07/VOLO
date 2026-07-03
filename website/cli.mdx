@@ -54,6 +54,21 @@ return JSON-RPC error `-32042` instead of a hallucination. See [Test MCP servers
 uv run volo mcp serve rec.json
 ```
 
+## `volo mcp fuzz`
+Mutate recorded tool responses with the adversarial scenario operators (seeded, reproducible);
+write one servable mutated recording per operator, or serve one hostile world directly.
+```bash
+uv run volo mcp fuzz rec.json [--seed 0] [--out-dir DIR] [--report fuzz.json]
+uv run volo mcp fuzz rec.json --op prompt_injection --serve
+```
+
+## `volo mcp conformance`
+Replay recorded requests against the LIVE server and diff the answers (recorded errors included).
+Exit 1 if behavior changed — a CI regression gate for MCP-server authors.
+```bash
+uv run volo mcp conformance rec.json [--report conf.json] -- <server command...>
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 

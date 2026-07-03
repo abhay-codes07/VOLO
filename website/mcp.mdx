@@ -88,9 +88,42 @@ A recorded `tools/list` response is automatically distilled into per-tool **sche
 but whose tool declares a response shape — can be synthesized under the same guarantee:
 **validate or flag, never hallucinate**.
 
-## What's next
+## Fuzz the boundary: what does your agent do when the server misbehaves?
 
-MCP **fuzzing** is the next milestone: Volo's adversarial scenario operators
-(corrupt fields, inject latency, prompt-inject tool outputs…) applied at the MCP boundary, plus a
-conformance report for MCP server authors. Track progress in the
+`volo mcp fuzz` mutates the recorded tool responses with Volo's adversarial scenario operators —
+dropped results, corrupted fields, embedded prompt injections, reordered answers — and writes one
+mutated recording per operator. Each one is a servable "hostile world":
+
+```bash
+uv run volo mcp fuzz calc.json --report fuzz-report.json
+# mcp fuzz: drop_tool_result   [resilience]        1 change(s) -> calc.drop_tool_result.seed0.json
+# mcp fuzz: corrupt_field      [robustness]        1 change(s) -> calc.corrupt_field.seed1.json
+# mcp fuzz: prompt_injection   [security]          1 change(s) -> calc.prompt_injection.seed2.json
+# mcp fuzz: reorder_steps      [order_sensitivity] 1 change(s) -> calc.reorder_steps.seed3.json
+
+# point your agent at one hostile world directly:
+uv run volo mcp fuzz calc.json --op prompt_injection --serve
+```
+
+Mutations are seeded (same seed, same hostile world — reproducible in CI), they only ever touch
+*real tool results*: the `initialize` handshake, `tools/list`, and recorded protocol errors stay
+byte-intact so the session still boots and failure behavior stays authentic.
+
+## For MCP server authors: conformance
+
+A recording is a behavioral contract. `volo mcp conformance` replays every recorded request
+against your **live** server build and diffs the answers — recorded errors included:
+
+```bash
+uv run volo mcp conformance calc.json --report conformance.json -- python my_server.py
+# mcp conformance: ok [002] mcp:tools/list      identical
+# mcp conformance: !! [003] mcp.tool:add        different
+# mcp conformance: 3 identical, 1 different, 0 no-reply -> FAIL   (exit code 1)
+```
+
+Run it in your server's CI to catch behavioral regressions before your users' agents do.
+
+## Roadmap
+
+Track what's next in the
 [roadmap](https://github.com/abhay-codes07/VOLO/blob/main/docs/ROADMAP.md).
