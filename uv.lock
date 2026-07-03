@@ -1041,6 +1041,7 @@ version = "0.1.0"
 source = { editable = "packages/volo-mcp" }
 dependencies = [
     { name = "volo-core" },
+    { name = "volo-scenarios" },
     { name = "volo-sdk" },
     { name = "volo-simulator" },
 ]
@@ -1048,6 +1049,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "volo-core", editable = "packages/volo-core" },
+    { name = "volo-scenarios", editable = "packages/volo-scenarios" },
     { name = "volo-sdk", editable = "packages/volo-sdk" },
     { name = "volo-simulator", editable = "packages/volo-simulator" },
 ]

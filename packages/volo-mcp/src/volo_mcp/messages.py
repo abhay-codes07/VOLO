@@ -75,6 +75,27 @@ def response_from_envelope(msg_id: MsgId, stored: dict[str, Any]) -> dict[str, A
     return {"jsonrpc": JSONRPC_VERSION, "id": msg_id, "result": stored.get("result")}
 
 
+def request_message(msg_id: MsgId, tool: str, request: dict[str, Any]) -> dict[str, Any]:
+    """Rebuild a wire-shape JSON-RPC request from a recorded ``(tool, request)`` identity.
+
+    The inverse of ``tool_key`` (lossy only for ``tools/call`` params beyond ``name`` +
+    ``arguments``, which ``tool_key`` deliberately drops from the cache identity).
+    """
+    if tool.startswith(TOOL_PREFIX):
+        params: dict[str, Any] = {"name": tool[len(TOOL_PREFIX) :], "arguments": request}
+        return {
+            "jsonrpc": JSONRPC_VERSION,
+            "id": msg_id,
+            "method": TOOL_CALL_METHOD,
+            "params": params,
+        }
+    method = tool[len(META_PREFIX) :] if tool.startswith(META_PREFIX) else tool
+    msg: dict[str, Any] = {"jsonrpc": JSONRPC_VERSION, "id": msg_id, "method": method}
+    if request:
+        msg["params"] = request
+    return msg
+
+
 def error_response(
     msg_id: MsgId,
     code: int,

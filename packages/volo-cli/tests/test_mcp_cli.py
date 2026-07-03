@@ -65,3 +65,66 @@ def test_mcp_record_then_serve_roundtrip(tmp_path: Path) -> None:
 def test_mcp_serve_missing_recording_fails() -> None:
     res = runner.invoke(app, ["mcp", "serve", "does-not-exist.json"])
     assert res.exit_code != 0
+
+
+def _record_fixture(tmp_path: Path) -> Path:
+    out = tmp_path / "calc.json"
+    res = runner.invoke(
+        app,
+        ["mcp", "record", "--out", str(out), "--", sys.executable, "-u", str(CALC_SERVER)],
+        input=CLIENT_INPUT,
+    )
+    assert res.exit_code == 0, res.output
+    return out
+
+
+def test_mcp_fuzz_writes_mutated_recordings_and_report(tmp_path: Path) -> None:
+    rec = _record_fixture(tmp_path)
+    fuzz_dir = tmp_path / "fuzzed"
+    report = tmp_path / "fuzz-report.json"
+
+    res = runner.invoke(
+        app,
+        ["mcp", "fuzz", str(rec), "--out-dir", str(fuzz_dir), "--report", str(report)],
+    )
+    assert res.exit_code == 0, res.output
+    files = sorted(p.name for p in fuzz_dir.glob("*.json"))
+    assert len(files) == 4 and any("corrupt_field" in f for f in files)
+    blob = json.loads(report.read_text(encoding="utf-8"))
+    assert {e["op"] for e in blob["scenarios"]} == {
+        "drop_tool_result",
+        "corrupt_field",
+        "prompt_injection",
+        "reorder_steps",
+    }
+    # every mutated file is itself a valid, servable recording
+    mutated = json.loads((fuzz_dir / files[0]).read_text(encoding="utf-8"))
+    assert mutated["recording_schema_version"] == "1.0.0"
+
+
+def test_mcp_fuzz_unknown_op_fails() -> None:
+    res = runner.invoke(app, ["mcp", "fuzz", "x.json", "--op", "nope"])
+    assert res.exit_code != 0
+
+
+def test_mcp_conformance_pass_and_fail(tmp_path: Path) -> None:
+    rec = _record_fixture(tmp_path)
+
+    ok = runner.invoke(
+        app, ["mcp", "conformance", str(rec), "--", sys.executable, "-u", str(CALC_SERVER)]
+    )
+    assert ok.exit_code == 0, ok.output
+    assert "PASS" in ok.output
+
+    # break the contract: recording now expects an answer the live server won't give
+    blob = json.loads(rec.read_text(encoding="utf-8"))
+    for step in blob["steps"]:
+        if step["payload"]["tool"] == "mcp.tool:add":
+            step["payload"]["response"] = {"result": {"content": [], "isError": True}}
+    rec.write_text(json.dumps(blob), encoding="utf-8")
+
+    bad = runner.invoke(
+        app, ["mcp", "conformance", str(rec), "--", sys.executable, "-u", str(CALC_SERVER)]
+    )
+    assert bad.exit_code == 1
+    assert "FAIL" in bad.output
