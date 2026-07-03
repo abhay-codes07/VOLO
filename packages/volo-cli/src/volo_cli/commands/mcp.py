@@ -54,7 +54,7 @@ def mcp_record(
     stats = proxy.recorder.stats
     typer.echo(
         f"mcp record: {len(recording.steps)} step(s), {stats.tool_specs_captured} tool spec(s), "
-        f"{proxy.framing_errors} framing error(s) → {path}",
+        f"{proxy.framing_errors} framing error(s) -> {path}",
         err=True,
     )
 
@@ -73,8 +73,8 @@ def mcp_serve(
     server = MCPReplayServer.from_recording(recording)
     typer.echo(
         f"mcp serve: simulating {recording.agent_meta.extra.get('mcp_server_name', 'mcp-server')!r}"
-        f" from {len(recording.steps)} recorded step(s) — Ctrl-D / client hang-up to stop",
+        f" from {len(recording.steps)} recorded step(s) - Ctrl-D / client hang-up to stop",
         err=True,
     )
     replies = serve_stdio(server, sys.stdin.buffer, sys.stdout.buffer)
-    typer.echo(f"mcp serve: session over — {replies} repl(y/ies) served", err=True)
+    typer.echo(f"mcp serve: session over - {replies} repl(y/ies) served", err=True)
