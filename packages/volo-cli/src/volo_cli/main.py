@@ -9,6 +9,7 @@ from volo_cli.commands.demo import demo_command
 from volo_cli.commands.diff import diff_command
 from volo_cli.commands.init import init_command
 from volo_cli.commands.mcp import mcp_app
+from volo_cli.commands.migrate import migrate_command
 from volo_cli.commands.record import record_command
 from volo_cli.commands.redteam import redteam_app
 from volo_cli.commands.run import run_command
@@ -58,6 +59,9 @@ app.command("run", help="Run an agent against scenarios; produce a reliability r
 app.command("ci", help="Block PRs that regress reliability (CI entrypoint).")(ci_command)
 app.command("diff", help="Diff two runs and attribute regressions to a step + commit.")(
     diff_command
+)
+app.command("migrate", help="Compare an agent's reliability + cost across two models.")(
+    migrate_command
 )
 app.command("demo", help="Seed the data dir with showcase recordings + reports.")(demo_command)
 app.add_typer(mcp_app, name="mcp")

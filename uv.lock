@@ -16,6 +16,7 @@ members = [
     "volo-diff",
     "volo-langgraph",
     "volo-mcp",
+    "volo-migrate",
     "volo-models",
     "volo-openai-agents",
     "volo-redteam",
@@ -996,6 +997,7 @@ dependencies = [
     { name = "typer" },
     { name = "volo-core" },
     { name = "volo-mcp" },
+    { name = "volo-migrate" },
     { name = "volo-redteam" },
     { name = "volo-sdk" },
     { name = "volo-shadow" },
@@ -1008,6 +1010,7 @@ requires-dist = [
     { name = "typer", specifier = ">=0.12" },
     { name = "volo-core", editable = "packages/volo-core" },
     { name = "volo-mcp", editable = "packages/volo-mcp" },
+    { name = "volo-migrate", editable = "packages/volo-migrate" },
     { name = "volo-redteam", editable = "packages/volo-redteam" },
     { name = "volo-sdk", editable = "packages/volo-sdk" },
     { name = "volo-shadow", editable = "packages/volo-shadow" },
@@ -1086,6 +1089,25 @@ requires-dist = [
     { name = "volo-scenarios", editable = "packages/volo-scenarios" },
     { name = "volo-sdk", editable = "packages/volo-sdk" },
     { name = "volo-simulator", editable = "packages/volo-simulator" },
+]
+
+[[package]]
+name = "volo-migrate"
+version = "0.1.0"
+source = { editable = "packages/volo-migrate" }
+dependencies = [
+    { name = "volo-core" },
+    { name = "volo-diff" },
+    { name = "volo-models" },
+    { name = "volo-reliability" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "volo-core", editable = "packages/volo-core" },
+    { name = "volo-diff", editable = "packages/volo-diff" },
+    { name = "volo-models", editable = "packages/volo-models" },
+    { name = "volo-reliability", editable = "packages/volo-reliability" },
 ]
 
 [[package]]
