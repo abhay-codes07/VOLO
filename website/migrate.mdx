@@ -1,0 +1,58 @@
+---
+title: "Model-migration lab"
+description: "Will my agent survive the next model? Compare reliability + cost across two models in one command — deterministic, near-$0."
+---
+
+Every provider ships a new model roughly every quarter, and every migration silently re-rolls
+your agent's behavior. `volo migrate` answers the question *before* you switch: does swapping the
+model regress any of your recorded traces, and what does it do to your bill?
+
+## How it works
+
+You already recorded your corpus under the current model (**A**). Re-record it once under the
+candidate (**B**) — the only live cost — then:
+
+```bash
+uv run volo migrate baseline/ candidate/ \
+  --from claude-haiku-4-5 --to llama-3.3-70b-versatile --out migration.json
+```
+
+Volo pairs the two corpora trace by trace (by file stem) and, for each pair, checks four things:
+
+- **tool path** — did the agent's decisions/tool usage change? (model identity is normalized out,
+  so a pure swap doesn't count as a path change on its own)
+- **final output** — did the answer change?
+- **faithfulness** — is the output still grounded in the tool evidence? (heuristic by default,
+  or `--judge ollama|groq`)
+- **cost** — projected spend under each model
+
+```
+migrate: claude-haiku-4-5 -> llama-3.3-70b-versatile over 12 trace(s)
+migrate: !! refund_flow        regressed  faith 1.00->0.00  output-changed
+migrate: ~~ address_lookup     changed    faith 1.00->1.00  path-changed
+migrate: ok checkout           unchanged  faith 1.00->1.00
+migrate: 1 improved, 1 regressed, 2 changed, 8 unchanged
+migrate: cost $0.4200 -> $0.0000 (-0.4200 projected)
+migrate: recommendation -> BLOCK
+```
+
+## The recommendation
+
+Pair outcomes roll up into one verdict:
+
+| Recommendation | Exit | When |
+|---|---|---|
+| `recommend` | 0 | only improved/unchanged pairs — safe to switch |
+| `review` | 0 | some pairs changed behavior but faithfulness held — eyeball them |
+| `block` | 5 | at least one pair regressed (faithfulness dropped) |
+
+Exit 5 is distinct from the reliability gate (1), shadow drift (3), and red-team (4), so a
+pipeline knows exactly which gate failed. The `--out` report has every pair verdict, the
+per-model cost totals, and any `unpaired` traces (present on only one side — never silently
+dropped).
+
+## Cost notes
+
+Cost uses each recording's recorded spend when present, else a token-based estimate from the
+built-in pricing table (`volo_models.pricing`). Local models (Ollama) and free tiers price at
+$0, so a frontier→local migration shows the full projected saving.

@@ -105,6 +105,14 @@ uv run volo redteam list [--pack pack.json]
 uv run volo redteam export my-pack.json
 ```
 
+## `volo migrate`
+Compare an agent's reliability + cost across two models: pair a baseline corpus (model A) with a
+re-recorded candidate corpus (model B), score each pair, recommend go/review/block. Exit 5 on
+block. See [Model-migration lab](/migrate).
+```bash
+uv run volo migrate <baseline> <candidate> [--from LABEL] [--to LABEL] [--judge heuristic|ollama|groq] [--out report.json]
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 

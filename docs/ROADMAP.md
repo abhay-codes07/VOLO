@@ -155,4 +155,13 @@ Goal: probe agents for injection/exfil/jailbreak vulnerability — safely, in th
       evidence); poison + replay run entirely in the Tier-1 sim (no live calls)
 - [x] `volo redteam run|list|export` — run exits 4 when any attack lands (CI safety gate)
 - [x] `examples/vulnerable_agent.py` — naive (fails) vs guarded (passes) side-by-side
-- [ ] M16: model-migration lab (`volo migrate --from A --to B`)
+
+## v1.7.0 — M16: model-migration lab ✅
+Goal: "will my agent survive the next model?" — reliability + cost delta across a model swap.
+
+- [x] `volo-migrate`: pair two corpora by stem (`pair_corpora`), model-agnostic tool-path
+      signature, per-pair `evaluate_pair` (tool-path / output / faithfulness / cost) — ADR-0020
+- [x] `MigrationReport` → recommendation `recommend` / `review` / `block`; projected cost delta
+      from `volo_models.pricing` (promoted to a public module, shared with `FrontierProvider`)
+- [x] `volo migrate <baseline> <candidate> --from --to [--judge] [--out]` — exit 5 on block
+- [ ] M17: simulated users & counterparties (persona-driven, seeded)
