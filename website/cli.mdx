@@ -95,6 +95,16 @@ by default, `--trace <run_id>` for a single banked trace. Feeds the `/shadow` da
 uv run volo shadow trend [--history PATH] [--trace RUN_ID]
 ```
 
+## `volo redteam run` / `list` / `export`
+Run the adversarial attack corpus against an agent in the sim; exit 4 if any attack lands.
+`list` shows the corpus by class; `export` writes it as an editable JSON pack. See
+[Red-team your agent](/redteam).
+```bash
+uv run volo redteam run <recording> --agent <module:fn> [--input '{...}'] [--pack pack.json] [--out annex.json]
+uv run volo redteam list [--pack pack.json]
+uv run volo redteam export my-pack.json
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 

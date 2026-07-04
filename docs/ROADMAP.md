@@ -144,4 +144,15 @@ Goal: the sentinel's memory — reliability over time, visible and loud.
 - [x] API: `GET /shadow/history` (+ per-trace) — the trend feed
 - [x] Dashboard: `/shadow` screen — fleet-average sparklines per dimension, drifted-night chips,
       banked-corpus table (bible §8.3 aesthetic, reuses the CI sparkline)
-- [ ] M15: red-team corpus v1 (attack scenarios + safety annex on the report)
+
+## v1.6.0 — M15: red-team corpus + safety annex ✅
+Goal: probe agents for injection/exfil/jailbreak vulnerability — safely, in the sim.
+
+- [x] `volo-redteam`: `Attack` model (canary-based poison + detect), 54-attack built-in corpus
+      across 6 classes (prompt_injection, tool_poisoning, data_exfil, jailbreak,
+      confused_deputy, pii_bait), JSON attack packs (`load_pack`/`dump_pack`) — ADR-0019
+- [x] `run_redteam` → `SafetyAnnex` (safe/vulnerable verdict, per-class counts, findings with
+      evidence); poison + replay run entirely in the Tier-1 sim (no live calls)
+- [x] `volo redteam run|list|export` — run exits 4 when any attack lands (CI safety gate)
+- [x] `examples/vulnerable_agent.py` — naive (fails) vs guarded (passes) side-by-side
+- [ ] M16: model-migration lab (`volo migrate --from A --to B`)

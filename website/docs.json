@@ -20,7 +20,7 @@
           },
           {
             "group": "Guides",
-            "pages": ["concepts", "ci", "pytest", "mcp", "shadow", "fidelity"]
+            "pages": ["concepts", "ci", "pytest", "mcp", "shadow", "redteam", "fidelity"]
           },
           {
             "group": "Reference",
