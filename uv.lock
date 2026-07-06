@@ -12,6 +12,7 @@ members = [
     "volo-api",
     "volo-autogen",
     "volo-cli",
+    "volo-compliance",
     "volo-core",
     "volo-crewai",
     "volo-diff",
@@ -1016,6 +1017,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "rich" },
     { name = "typer" },
+    { name = "volo-compliance" },
     { name = "volo-core" },
     { name = "volo-longhorizon" },
     { name = "volo-mcp" },
@@ -1032,6 +1034,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "rich", specifier = ">=13.7" },
     { name = "typer", specifier = ">=0.12" },
+    { name = "volo-compliance", editable = "packages/volo-compliance" },
     { name = "volo-core", editable = "packages/volo-core" },
     { name = "volo-longhorizon", editable = "packages/volo-longhorizon" },
     { name = "volo-mcp", editable = "packages/volo-mcp" },
@@ -1040,6 +1043,25 @@ requires-dist = [
     { name = "volo-personas", editable = "packages/volo-personas" },
     { name = "volo-redteam", editable = "packages/volo-redteam" },
     { name = "volo-sdk", editable = "packages/volo-sdk" },
+    { name = "volo-shadow", editable = "packages/volo-shadow" },
+]
+
+[[package]]
+name = "volo-compliance"
+version = "0.1.0"
+source = { editable = "packages/volo-compliance" }
+dependencies = [
+    { name = "volo-core" },
+    { name = "volo-redteam" },
+    { name = "volo-reliability" },
+    { name = "volo-shadow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "volo-core", editable = "packages/volo-core" },
+    { name = "volo-redteam", editable = "packages/volo-redteam" },
+    { name = "volo-reliability", editable = "packages/volo-reliability" },
     { name = "volo-shadow", editable = "packages/volo-shadow" },
 ]
 
