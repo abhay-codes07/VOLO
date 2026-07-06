@@ -57,5 +57,27 @@ pack validate: acme-security@1.0.0 -> INVALID (2 problem(s))     (exit 1)
 | `scenarios` | scenario selections (`op`, `seed`, `params`) | `pack init scenarios` |
 
 `volo pack init` seeds any kind from Volo's built-in library, so the fastest way to a custom pack
-is to start from the defaults and edit. The registry (publish / install-by-name) builds on this
-same on-disk format — coming next on the [roadmap](https://github.com/abhay-codes07/VOLO/blob/main/docs/ROADMAP.md).
+is to start from the defaults and edit.
+
+## Registry: publish + install by name
+
+There is **no registry service** — a registry is a single `index.json` in a public git repo (or
+any URL). Publishing is a commit to that file; installing is an HTTP GET, checksum-verified. $0
+infra.
+
+```bash
+# publish: add your pack (hosted at --url) to the index, then commit index.json to the registry repo
+uv run volo pack publish acme-security.json \
+  --url https://raw.githubusercontent.com/acme/volo-packs/main/acme-security@1.0.0.json \
+  --index index.json
+
+# discover + install by name (resolves the latest semver unless --version is given)
+uv run volo pack search --registry https://raw.githubusercontent.com/acme/volo-packs/main/index.json
+uv run volo pack install acme-security --registry https://.../index.json
+# pack install: acme-security@1.0.0 [attacks] 54 item(s) from registry -> ./.volo/packs
+```
+
+Install refuses a pack unless its content checksum matches the checksum the registry recorded at
+publish time **and** the pack validates — so a pack swapped or corrupted after publishing can't be
+installed under a trusted name. The registry index and pack URLs can be `https://`, `file://`, or
+local paths, so you can host a private registry as a plain directory.

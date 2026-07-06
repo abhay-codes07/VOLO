@@ -208,5 +208,14 @@ inventory.
 - [x] `PackStore` — local install dir + index, dedupe by `name@version`, tamper-safe install
 - [x] `volo pack init|validate|install|list` — `init` seeds from built-ins; `validate` exit 1 on
       bad checksum/schema
-- [ ] M21: git-backed registry index (publish / install-by-name; $0 infra)
+- [x] M21: git-backed registry index (publish / install-by-name; $0 infra) — ADR-0025
+
+## v2.2.0 — M21: git-backed pack registry ✅
+Goal: publish/install packs by name with no registry service — a JSON index in a git repo.
+
+- [x] `volo_packs.registry`: `RegistryIndex` (name → versions → {url, checksum, n_items}),
+      `register`/`resolve` (latest by semver), `install_from_registry` (checksum-verified) — ADR-0025
+- [x] Sources are http(s) / file:// / local path (stdlib urllib; $0 infra)
+- [x] `volo pack publish` (add to index), `volo pack install <name> --registry` (by name),
+      `volo pack search` (list a registry)
 - [ ] M22 adapters v2 · M23 VS Code · M24 public leaderboard · M25 marketplace GA

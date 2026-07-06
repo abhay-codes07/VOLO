@@ -140,6 +140,15 @@ uv run volo pack install pack.json [--dir ./.volo/packs] [--force]
 uv run volo pack list
 ```
 
+## `volo pack publish` / `install --registry` / `search`
+Publish a pack to a git-backed registry index and install packs by name (checksum-verified).
+No registry service — the index is a JSON file in a repo. See [Content packs](/packs).
+```bash
+uv run volo pack publish pack.json --url <hosted-url> --index index.json
+uv run volo pack search --registry <index-url-or-path> [name]
+uv run volo pack install <name> --registry <index-url-or-path> [--version X]
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 
