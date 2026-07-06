@@ -1,0 +1,42 @@
+---
+title: "Reliability leaderboard"
+description: "Agents ranked by a single Volo Score — clean-run correctness × adversarial robustness, deterministic and rebuilt weekly at $0."
+---
+
+The leaderboard scores agents the way a FICO score scores credit: one number that summarizes
+whether an agent is **reliable enough to ship**. It's deterministic (no live models, seeded), so
+the same agent always gets the same score, and it's a static artifact — rebuilt by a GitHub
+Actions cron, served as a committed HTML/Markdown table. $0 infra.
+
+## The Volo Score
+
+For each agent, Volo records one run, then runs the full adversarial scenario suite against it and
+combines two halves into a 0-100 score:
+
+- **Clean-run correctness (50%)** — is the agent's normal answer grounded in its tool evidence?
+- **Adversarial robustness (50%)** — the mean of the four reliability dimensions
+  (trajectory & decision determinism, faithfulness, consistency) under dropped/corrupted/injected
+  tool outputs.
+
+An agent that's *correct but flaky* loses the second half; one that's *stable but wrong* loses the
+first. Only agents that are both score high.
+
+## Example board
+
+Run `uv run python benchmarks/leaderboard.py` to regenerate; the committed
+`benchmarks/leaderboard.{json,md,html}` are the published artifact.
+
+| Rank | Agent | Volo Score | What it shows |
+|---|---|---|---|
+| 1 | research_agent | 91 | correct + robust |
+| 2–4 | calc / echo | 88 | correct + robust (simpler) |
+| 5 | flaky_agent | 21 | nondeterministic → determinism & consistency collapse |
+
+The gap between the stable agents and `flaky_agent` is the point: the score discriminates a
+reliable agent from an unreliable one, deterministically, with no human judgment and no API cost.
+
+## Rebuild it weekly
+
+The template `examples/workflows/volo-leaderboard.yml` regenerates the board on a cron and commits
+it back — point `benchmarks/leaderboard.html` at GitHub Pages to publish it. Because the whole
+thing is deterministic replay, the workflow costs nothing to run and never flakes.

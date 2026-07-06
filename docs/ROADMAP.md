@@ -217,7 +217,17 @@ Goal: extend M7's `wrap()` + OTel-import pattern to three more frameworks.
 - [x] `integrations/pydantic_ai` (`volo-pydantic-ai`) — `agent.model` + `run_sync`
 - [x] `integrations/semantic_kernel` (`volo-semantic-kernel`) — `kernel.services` + `invoke`
 - [x] Each: `wrap()` (proxy swap + decision step) + `import_*_otel()`; fake-based tests (ADR-0026)
-- [ ] M23 VS Code · M24 public leaderboard · M25 marketplace GA
+- [ ] M23 VS Code · M25 marketplace GA
+
+## v2.4.0 — M24: public reliability leaderboard ✅
+Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.
+
+- [x] `benchmarks/leaderboard.py`: record each example agent → run the scenario suite → rank by
+      Volo Score (50% clean correctness + 50% adversarial robustness) — ADR-0027
+- [x] Renders `leaderboard.{json,md,html}` (self-contained static site, $0 infra)
+- [x] `examples/flaky_agent.py` (nondeterministic) proves the score discriminates reliable from
+      unreliable agents (91/88 stable vs 21 flaky)
+- [x] Weekly-rebuild GitHub Action template (`examples/workflows/volo-leaderboard.yml`)
 
 ## v2.2.0 — M21: git-backed pack registry ✅
 Goal: publish/install packs by name with no registry service — a JSON index in a git repo.
