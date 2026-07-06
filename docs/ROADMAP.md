@@ -217,7 +217,20 @@ Goal: extend M7's `wrap()` + OTel-import pattern to three more frameworks.
 - [x] `integrations/pydantic_ai` (`volo-pydantic-ai`) — `agent.model` + `run_sync`
 - [x] `integrations/semantic_kernel` (`volo-semantic-kernel`) — `kernel.services` + `invoke`
 - [x] Each: `wrap()` (proxy swap + decision step) + `import_*_otel()`; fake-based tests (ADR-0026)
-- [ ] M23 VS Code · M25 marketplace GA
+- [ ] M23 VS Code (deferred — editor/JS surface)
+
+## v3.0.0 — M25: marketplace GA (closes wave 3) ✅
+Goal: verified publishers — pack signing + a curated public seed registry.
+
+- [x] `volo_packs.signing`: HMAC-SHA256 publisher signatures binding `name@version` + checksum;
+      `Keyring` verification — ADR-0028 (Ed25519 upgrade documented as next)
+- [x] `volo pack sign` / `verify`; `--keyring` + `--require-signed` on install
+- [x] Registry `verified` flag + publisher; `install_from_registry` verifies signatures
+- [x] Seed public registry `registry/` (built-in attacks/personas/scenarios packs + index)
+- [x] Tag v3.0.0
+
+**Wave 3 (v2.1 → v3.0) complete.** Next: wave 4 — cloud control plane (M26), hosted Tier-2
+sim-minutes (M27), PR-check app (M28), compliance evidence packs (M29), RBAC/SSO/audit (M30).
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.

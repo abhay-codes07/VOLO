@@ -146,7 +146,16 @@ No registry service — the index is a JSON file in a repo. See [Content packs](
 ```bash
 uv run volo pack publish pack.json --url <hosted-url> --index index.json
 uv run volo pack search --registry <index-url-or-path> [name]
-uv run volo pack install <name> --registry <index-url-or-path> [--version X]
+uv run volo pack install <name> --registry <index-url-or-path> [--version X] [--keyring k.json] [--require-signed]
+```
+
+## `volo pack sign` / `verify`
+Sign a pack with a publisher secret (HMAC-SHA256) so installers can verify provenance; the
+registry marks signed versions `verified`. `verify` exits 1 on a bad/absent signature.
+```bash
+export VOLO_PACK_SECRET=...   # the publisher's secret
+uv run volo pack sign pack.json --publisher <name>
+uv run volo pack verify pack.json --keyring keyring.json
 ```
 
 ## `volo scenarios`

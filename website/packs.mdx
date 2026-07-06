@@ -81,3 +81,28 @@ Install refuses a pack unless its content checksum matches the checksum the regi
 publish time **and** the pack validates — so a pack swapped or corrupted after publishing can't be
 installed under a trusted name. The registry index and pack URLs can be `https://`, `file://`, or
 local paths, so you can host a private registry as a plain directory.
+
+## Verified publishers
+
+A publisher can **sign** a pack — an HMAC-SHA256 signature binding the pack's `name@version` to its
+content checksum under a secret. The registry marks signed versions `verified`, and installers can
+refuse anything unsigned or wrongly-signed:
+
+```bash
+# publisher signs with their secret (from an env var, never committed)
+export VOLO_PACK_SECRET=...
+uv run volo pack sign acme-security.json --publisher acme-corp
+
+# anyone with the keyring can verify
+uv run volo pack verify acme-security.json --keyring keyring.json        # -> VALID / exit 1
+
+# install only signed packs from trusted publishers
+uv run volo pack install acme-security --registry <src> \
+  --keyring keyring.json --require-signed
+```
+
+A keyring is `{ "publisher": "secret" }`. HMAC is a shared-secret scheme — well suited to private
+and team registries; an asymmetric (Ed25519) upgrade for a fully public marketplace is the
+documented next step (ADR-0028). The built-in packs in the seed [`registry/`](https://github.com/abhay-codes07/VOLO/tree/main/registry)
+are unsigned and trivially reproducible (`volo pack init` yields byte-identical items), so their
+integrity is self-evident from the checksum alone.
