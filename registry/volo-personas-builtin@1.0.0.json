@@ -1,0 +1,48 @@
+{
+  "manifest": {
+    "name": "volo-personas-builtin",
+    "version": "1.0.0",
+    "kind": "personas",
+    "checksum": "369595c2e9f189b32061a287b8814d6904bb484c2ddac6973d4189ac772e0d88",
+    "description": "Official built-in personas pack.",
+    "author": "Volo",
+    "pack_format": "1",
+    "volo_min_version": "2.0.0",
+    "n_items": 2,
+    "signature": null
+  },
+  "items": [
+    {
+      "name": "decisive-traveler",
+      "goal": "book a one-way flight to Tokyo in economy",
+      "facts": {
+        "destination": "Tokyo",
+        "class": "economy",
+        "one-way or round": "one-way",
+        "budget": "under $900"
+      },
+      "script": [
+        "Yes, that works.",
+        "Go ahead and book it."
+      ],
+      "default": "I'm not sure — please use your best judgment.",
+      "expected": [
+        "Tokyo"
+      ]
+    },
+    {
+      "name": "vague-shopper",
+      "goal": "get a gift recommendation and be nudged toward specifics",
+      "facts": {
+        "budget": "around $50",
+        "recipient": "my brother"
+      },
+      "script": [
+        "Hmm, not sure.",
+        "Whatever you think is best."
+      ],
+      "default": "I don't really mind.",
+      "expected": []
+    }
+  ]
+}

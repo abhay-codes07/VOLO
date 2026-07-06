@@ -95,6 +95,54 @@ def test_install_rejects_tampered_pack(tmp_path: Path) -> None:
         install_from_registry("acme", index_file, PackStore(tmp_path / "store"))
 
 
+def test_verified_flag_and_signed_install(tmp_path: Path) -> None:
+    from volo_packs import sign_pack
+
+    pack = sign_pack(_pack(version="1.0.0"), publisher="acme", secret="s3cret")
+    pack_file = write_pack(pack, tmp_path / "acme.json")
+    idx = RegistryIndex()
+    register(idx, pack, str(pack_file))
+    index_file = save_index(idx, tmp_path / "index.json")
+
+    # the registry marks the version verified + records the publisher
+    _, entry = resolve(load_index(index_file), "acme")
+    assert entry.verified is True and entry.publisher == "acme"
+
+    # install with a matching keyring succeeds
+    store = PackStore(tmp_path / "store")
+    installed = install_from_registry(
+        "acme", index_file, store, keyring={"acme": "s3cret"}, require_signed=True
+    )
+    assert installed.name == "acme"
+
+
+def test_verified_install_without_keyring_is_refused(tmp_path: Path) -> None:
+    from volo_packs import sign_pack
+
+    pack = sign_pack(_pack(version="1.0.0"), publisher="acme", secret="s3cret")
+    pack_file = write_pack(pack, tmp_path / "acme.json")
+    idx = RegistryIndex()
+    register(idx, pack, str(pack_file))
+    index_file = save_index(idx, tmp_path / "index.json")
+
+    # verified entry + no/ wrong keyring → refuse (entry.verified forces the check)
+    with pytest.raises(RegistryError, match="signature verification failed"):
+        install_from_registry("acme", index_file, PackStore(tmp_path / "store"), keyring={})
+
+
+def test_require_signed_refuses_unsigned_pack(tmp_path: Path) -> None:
+    pack = _pack(version="1.0.0")  # unsigned
+    pack_file = write_pack(pack, tmp_path / "acme.json")
+    idx = RegistryIndex()
+    register(idx, pack, str(pack_file))
+    index_file = save_index(idx, tmp_path / "index.json")
+
+    with pytest.raises(RegistryError, match="signature verification failed"):
+        install_from_registry(
+            "acme", index_file, PackStore(tmp_path / "store"), require_signed=True
+        )
+
+
 def test_install_over_http(tmp_path: Path) -> None:
     pack = _pack(version="1.0.0", kind="personas")
     server = HTTPServer(("127.0.0.1", 0), _make_handler(pack))

@@ -30,6 +30,8 @@ class RegistryVersion(BaseModel):
     url: str
     checksum: str
     n_items: int = 0
+    verified: bool = False  # True when the published pack carried a publisher signature (M25)
+    publisher: str | None = None
 
 
 class RegistryPack(BaseModel):
@@ -90,9 +92,14 @@ def register(index: RegistryIndex, pack: Pack, url: str) -> RegistryIndex:
     existing = index.packs.get(name)
     if existing is not None and existing.kind != kind:
         raise RegistryError(f"{name!r} is registered as kind {existing.kind!r}, not {kind!r}")
+    sig = pack.manifest.signature
     entry = index.packs.setdefault(name, RegistryPack(kind=kind))
     entry.versions[version] = RegistryVersion(
-        url=url, checksum=pack.manifest.checksum, n_items=pack.manifest.n_items
+        url=url,
+        checksum=pack.manifest.checksum,
+        n_items=pack.manifest.n_items,
+        verified=sig is not None,
+        publisher=sig.publisher if sig is not None else None,
     )
     return index
 
@@ -124,8 +131,14 @@ def install_from_registry(
     *,
     version: str | None = None,
     force: bool = False,
+    keyring: dict[str, str] | None = None,
+    require_signed: bool = False,
 ) -> InstalledPack:
-    """Resolve → fetch → verify checksum against the index → validate → install."""
+    """Resolve → fetch → verify checksum (and, when asked, signature) → validate → install.
+
+    When ``require_signed`` is set, or the registry marks the version ``verified``, the fetched
+    pack must carry a signature from a publisher in ``keyring`` (ADR-0028).
+    """
     index = load_index(source)
     resolved_version, entry = resolve(index, name, version)
     pack = fetch_pack(entry.url)
@@ -140,6 +153,16 @@ def install_from_registry(
             f"checksum mismatch for {pack.ref}: registry {entry.checksum[:12]}... != "
             f"fetched {actual[:12]}... (pack was altered after publishing)"
         )
+
+    if require_signed or entry.verified:
+        from volo_packs.signing import verify_pack_signature
+
+        if not verify_pack_signature(pack, keyring or {}):
+            raise RegistryError(
+                f"signature verification failed for {pack.ref} "
+                f"(publisher={entry.publisher!r}); refusing to install"
+            )
+
     try:
         return store.install(pack, force=force)
     except PackInstallError as exc:

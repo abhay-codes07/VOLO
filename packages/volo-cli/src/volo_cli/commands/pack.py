@@ -86,6 +86,12 @@ def pack_install(
     ] = None,
     directory: _DirOpt = DEFAULT_PACK_DIR,
     force: Annotated[bool, typer.Option("--force", help="Overwrite an installed version.")] = False,
+    keyring: Annotated[
+        Path | None, typer.Option("--keyring", help="Keyring JSON of trusted publishers.")
+    ] = None,
+    require_signed: Annotated[
+        bool, typer.Option("--require-signed", help="Refuse packs without a valid signature.")
+    ] = False,
 ) -> None:
     """Install a pack from a local file, or by name from a registry (--registry)."""
     from volo_packs import (
@@ -93,13 +99,23 @@ def pack_install(
         PackStore,
         RegistryError,
         install_from_registry,
+        load_keyring,
         read_pack,
     )
 
     store = PackStore(directory)
     if registry is not None:
+        keys = load_keyring(keyring) if keyring is not None else None
         try:
-            entry = install_from_registry(ref, registry, store, version=version, force=force)
+            entry = install_from_registry(
+                ref,
+                registry,
+                store,
+                version=version,
+                force=force,
+                keyring=keys,
+                require_signed=require_signed,
+            )
         except RegistryError as exc:
             typer.echo(f"pack install: {exc}")
             raise typer.Exit(INVALID_EXIT_CODE) from exc
@@ -121,6 +137,51 @@ def pack_install(
         f"pack install: {entry.name}@{entry.version} [{entry.kind}] "
         f"{entry.n_items} item(s) -> {directory}"
     )
+
+
+@pack_app.command("sign")
+def pack_sign(
+    pack_path: Annotated[Path, typer.Argument(help="Pack JSON to sign (updated in place).")],
+    publisher: Annotated[str, typer.Option("--publisher", help="Publisher name.")],
+    secret_env: Annotated[
+        str, typer.Option("--secret-env", help="Env var holding the signing secret.")
+    ] = "VOLO_PACK_SECRET",
+) -> None:
+    """Sign a pack with a publisher secret (HMAC-SHA256) so installers can verify it."""
+    import os
+
+    from volo_packs import read_pack, sign_pack, write_pack
+
+    if not pack_path.exists():
+        raise typer.BadParameter(f"Pack not found: {pack_path}")
+    secret = os.environ.get(secret_env)
+    if not secret:
+        raise typer.BadParameter(f"no signing secret in ${secret_env}")
+    pack = sign_pack(read_pack(pack_path), publisher=publisher, secret=secret)
+    write_pack(pack, pack_path)
+    typer.echo(f"pack sign: {pack.ref} signed by {publisher!r} (hmac-sha256) -> {pack_path}")
+
+
+@pack_app.command("verify")
+def pack_verify(
+    pack_path: Annotated[Path, typer.Argument(help="Pack JSON to verify.")],
+    keyring: Annotated[Path, typer.Option("--keyring", help="Keyring JSON of trusted publishers.")],
+) -> None:
+    """Verify a pack's publisher signature against a keyring (exit 1 on failure)."""
+    from volo_packs import load_keyring, read_pack, verify_pack_signature
+
+    if not pack_path.exists():
+        raise typer.BadParameter(f"Pack not found: {pack_path}")
+    pack = read_pack(pack_path)
+    sig = pack.manifest.signature
+    if sig is None:
+        typer.echo(f"pack verify: {pack.ref} is UNSIGNED")
+        raise typer.Exit(INVALID_EXIT_CODE)
+    if verify_pack_signature(pack, load_keyring(keyring)):
+        typer.echo(f"pack verify: {pack.ref} signed by {sig.publisher!r} -> VALID")
+        return
+    typer.echo(f"pack verify: {pack.ref} signature from {sig.publisher!r} -> INVALID")
+    raise typer.Exit(INVALID_EXIT_CODE)
 
 
 @pack_app.command("publish")

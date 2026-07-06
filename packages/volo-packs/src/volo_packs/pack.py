@@ -27,6 +27,16 @@ def content_checksum(items: list[dict[str, Any]]) -> str:
     return hashlib.sha256(canonical_json(items).encode("utf-8")).hexdigest()
 
 
+class PackSignature(BaseModel):
+    """A publisher's signature over a pack's identity + content checksum (M25 / ADR-0028)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    publisher: str
+    algorithm: str  # e.g. "hmac-sha256"
+    value: str  # hex digest
+
+
 class PackManifest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -39,6 +49,7 @@ class PackManifest(BaseModel):
     pack_format: str = PACK_FORMAT_VERSION
     volo_min_version: str = "2.0.0"
     n_items: int = 0
+    signature: PackSignature | None = None  # optional publisher signature (M25)
 
 
 class Pack(BaseModel):

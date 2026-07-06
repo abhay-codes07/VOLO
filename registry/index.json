@@ -1,0 +1,41 @@
+{
+  "registry_format": "1",
+  "packs": {
+    "volo-redteam-builtin": {
+      "kind": "attacks",
+      "versions": {
+        "1.0.0": {
+          "url": "https://raw.githubusercontent.com/abhay-codes07/VOLO/main/registry/volo-redteam-builtin@1.0.0.json",
+          "checksum": "56c7f215e11a59043a408ca3c5c3c37fbd87ea8e277d62406ea1493e16cbaddc",
+          "n_items": 54,
+          "verified": false,
+          "publisher": null
+        }
+      }
+    },
+    "volo-personas-builtin": {
+      "kind": "personas",
+      "versions": {
+        "1.0.0": {
+          "url": "https://raw.githubusercontent.com/abhay-codes07/VOLO/main/registry/volo-personas-builtin@1.0.0.json",
+          "checksum": "369595c2e9f189b32061a287b8814d6904bb484c2ddac6973d4189ac772e0d88",
+          "n_items": 2,
+          "verified": false,
+          "publisher": null
+        }
+      }
+    },
+    "volo-scenarios-builtin": {
+      "kind": "scenarios",
+      "versions": {
+        "1.0.0": {
+          "url": "https://raw.githubusercontent.com/abhay-codes07/VOLO/main/registry/volo-scenarios-builtin@1.0.0.json",
+          "checksum": "c64a03951f827a36174644663f279437454da48026e7e7e82a46317b3063e570",
+          "n_items": 7,
+          "verified": false,
+          "publisher": null
+        }
+      }
+    }
+  }
+}

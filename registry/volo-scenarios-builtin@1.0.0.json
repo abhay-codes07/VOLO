@@ -1,0 +1,51 @@
+{
+  "manifest": {
+    "name": "volo-scenarios-builtin",
+    "version": "1.0.0",
+    "kind": "scenarios",
+    "checksum": "c64a03951f827a36174644663f279437454da48026e7e7e82a46317b3063e570",
+    "description": "Official built-in scenarios pack.",
+    "author": "Volo",
+    "pack_format": "1",
+    "volo_min_version": "2.0.0",
+    "n_items": 7,
+    "signature": null
+  },
+  "items": [
+    {
+      "op": "drop_tool_result",
+      "seed": 0,
+      "params": {}
+    },
+    {
+      "op": "corrupt_field",
+      "seed": 1,
+      "params": {}
+    },
+    {
+      "op": "inject_latency",
+      "seed": 2,
+      "params": {}
+    },
+    {
+      "op": "ambiguous_user_turn",
+      "seed": 3,
+      "params": {}
+    },
+    {
+      "op": "prompt_injection",
+      "seed": 4,
+      "params": {}
+    },
+    {
+      "op": "reorder_steps",
+      "seed": 5,
+      "params": {}
+    },
+    {
+      "op": "long_horizon_repeat",
+      "seed": 6,
+      "params": {}
+    }
+  ]
+}
