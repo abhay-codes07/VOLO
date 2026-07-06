@@ -62,3 +62,35 @@ def test_install_duplicate_fails_without_force(tmp_path: Path) -> None:
     assert runner.invoke(app, ["pack", "install", str(pack), "--dir", str(store)]).exit_code == 0
     dup = runner.invoke(app, ["pack", "install", str(pack), "--dir", str(store)])
     assert dup.exit_code == 1 and "already installed" in dup.output
+
+
+def test_publish_then_install_by_name(tmp_path: Path) -> None:
+    pack = tmp_path / "acme.json"
+    index = tmp_path / "index.json"
+    store = tmp_path / "store"
+    runner.invoke(
+        app, ["pack", "init", "attacks", str(pack), "--name", "acme", "--version", "1.0.0"]
+    )
+
+    pub = runner.invoke(
+        app, ["pack", "publish", str(pack), "--url", str(pack), "--index", str(index)]
+    )
+    assert pub.exit_code == 0, pub.output
+    assert "acme@1.0.0" in pub.output and index.exists()
+
+    search = runner.invoke(app, ["pack", "search", "--registry", str(index)])
+    assert search.exit_code == 0 and "acme@1.0.0" in search.output
+
+    inst = runner.invoke(
+        app, ["pack", "install", "acme", "--registry", str(index), "--dir", str(store)]
+    )
+    assert inst.exit_code == 0, inst.output
+    assert "from registry" in inst.output
+    assert runner.invoke(app, ["pack", "list", "--dir", str(store)]).output.count("acme@1.0.0")
+
+
+def test_install_unknown_name_from_registry_fails(tmp_path: Path) -> None:
+    index = tmp_path / "index.json"
+    index.write_text('{"registry_format":"1","packs":{}}', encoding="utf-8")
+    res = runner.invoke(app, ["pack", "install", "ghost", "--registry", str(index)])
+    assert res.exit_code == 1 and "not in the registry" in res.output

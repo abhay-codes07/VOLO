@@ -73,18 +73,47 @@ def pack_validate(
 
 @pack_app.command("install")
 def pack_install(
-    pack_path: Annotated[Path, typer.Argument(help="Pack JSON to install.")],
+    ref: Annotated[
+        str,
+        typer.Argument(help="A pack JSON file, or a pack NAME when --registry is given."),
+    ],
+    registry: Annotated[
+        str | None,
+        typer.Option("--registry", help="Registry index URL/path; installs REF by name."),
+    ] = None,
+    version: Annotated[
+        str | None, typer.Option("--version", help="Registry version (default: latest).")
+    ] = None,
     directory: _DirOpt = DEFAULT_PACK_DIR,
     force: Annotated[bool, typer.Option("--force", help="Overwrite an installed version.")] = False,
 ) -> None:
-    """Validate a pack and install it into the local pack store."""
-    from volo_packs import PackInstallError, PackStore, read_pack
+    """Install a pack from a local file, or by name from a registry (--registry)."""
+    from volo_packs import (
+        PackInstallError,
+        PackStore,
+        RegistryError,
+        install_from_registry,
+        read_pack,
+    )
 
+    store = PackStore(directory)
+    if registry is not None:
+        try:
+            entry = install_from_registry(ref, registry, store, version=version, force=force)
+        except RegistryError as exc:
+            typer.echo(f"pack install: {exc}")
+            raise typer.Exit(INVALID_EXIT_CODE) from exc
+        typer.echo(
+            f"pack install: {entry.name}@{entry.version} [{entry.kind}] "
+            f"{entry.n_items} item(s) from registry -> {directory}"
+        )
+        return
+
+    pack_path = Path(ref)
     if not pack_path.exists():
-        raise typer.BadParameter(f"Pack not found: {pack_path}")
-    pack = read_pack(pack_path)
+        raise typer.BadParameter(f"Pack not found: {pack_path} (use --registry to install by name)")
     try:
-        entry = PackStore(directory).install(pack, force=force)
+        entry = store.install(read_pack(pack_path), force=force)
     except PackInstallError as exc:
         typer.echo(f"pack install: {exc}")
         raise typer.Exit(INVALID_EXIT_CODE) from exc
@@ -92,6 +121,55 @@ def pack_install(
         f"pack install: {entry.name}@{entry.version} [{entry.kind}] "
         f"{entry.n_items} item(s) -> {directory}"
     )
+
+
+@pack_app.command("publish")
+def pack_publish(
+    pack_path: Annotated[Path, typer.Argument(help="Pack JSON to publish.")],
+    url: Annotated[str, typer.Option("--url", help="Where the pack will be hosted (raw URL).")],
+    index: Annotated[
+        Path, typer.Option("--index", help="Registry index file to update (created if missing).")
+    ] = Path("index.json"),
+) -> None:
+    """Add a pack to a git-backed registry index (then commit the index to the registry repo)."""
+    from volo_packs import RegistryError, RegistryIndex, load_index, read_pack, register, save_index
+
+    if not pack_path.exists():
+        raise typer.BadParameter(f"Pack not found: {pack_path}")
+    pack = read_pack(pack_path)
+    idx = load_index(index) if index.exists() else RegistryIndex()
+    try:
+        register(idx, pack, url)
+    except RegistryError as exc:
+        typer.echo(f"pack publish: {exc}")
+        raise typer.Exit(INVALID_EXIT_CODE) from exc
+    save_index(idx, index)
+    typer.echo(f"pack publish: {pack.ref} [{pack.manifest.kind}] -> {index}")
+    typer.echo("pack publish: commit the index to your registry repo to make it installable.")
+
+
+@pack_app.command("search")
+def pack_search(
+    registry: Annotated[str, typer.Option("--registry", help="Registry index URL/path.")],
+    query: Annotated[
+        str | None, typer.Argument(help="Optional name substring to filter by.")
+    ] = None,
+) -> None:
+    """List packs available in a registry index."""
+    from volo_packs import index_summary, load_index
+
+    rows = index_summary(load_index(registry))
+    if query:
+        rows = [r for r in rows if query.lower() in r["name"].lower()]
+    if not rows:
+        typer.echo("pack search: no matching packs")
+        return
+    for r in rows:
+        typer.echo(
+            f"pack search: {r['name']}@{r['latest']:8} [{r['kind']:10}] "
+            f"{r['n_items']} item(s)  versions={','.join(r['versions'])}"
+        )
+    typer.echo(f"pack search: {len(rows)} pack(s)")
 
 
 @pack_app.command("list")

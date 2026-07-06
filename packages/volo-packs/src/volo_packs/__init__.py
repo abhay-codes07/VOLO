@@ -10,6 +10,19 @@ from volo_packs.pack import (
     validate_pack,
     write_pack,
 )
+from volo_packs.registry import (
+    RegistryError,
+    RegistryIndex,
+    RegistryPack,
+    RegistryVersion,
+    fetch_pack,
+    index_summary,
+    install_from_registry,
+    load_index,
+    register,
+    resolve,
+    save_index,
+)
 from volo_packs.store import InstalledPack, PackInstallError, PackStore
 
 __all__ = [
@@ -20,9 +33,20 @@ __all__ = [
     "PackKind",
     "PackManifest",
     "PackStore",
+    "RegistryError",
+    "RegistryIndex",
+    "RegistryPack",
+    "RegistryVersion",
     "build_pack",
     "content_checksum",
+    "fetch_pack",
+    "index_summary",
+    "install_from_registry",
+    "load_index",
     "read_pack",
+    "register",
+    "resolve",
+    "save_index",
     "starter_items",
     "validate_items",
     "validate_pack",
