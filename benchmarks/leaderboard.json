@@ -1,0 +1,136 @@
+{
+  "seed": 0,
+  "n_runs": 3,
+  "rows": [
+    {
+      "name": "research_agent",
+      "framework": "raw",
+      "model": "-",
+      "volo_score": 91,
+      "verdict": "no_ship",
+      "baseline_faithfulness": 1.0,
+      "dimensions": {
+        "trajectory_determinism": 1.0,
+        "decision_determinism": 1.0,
+        "faithfulness": 0.3,
+        "consistency_under_repetition": 1.0
+      },
+      "by_failure_class": {
+        "drift": 1.0,
+        "order_sensitivity": 1.0,
+        "resilience": 0.75,
+        "robustness": 1.0,
+        "security": 1.0,
+        "spec_compliance": 1.0,
+        "timeout_handling": 1.0
+      },
+      "n_scenarios": 7,
+      "n_steps": 3,
+      "rank": 1
+    },
+    {
+      "name": "calc_agent",
+      "framework": "raw",
+      "model": "echo/echo-1",
+      "volo_score": 88,
+      "verdict": "no_ship",
+      "baseline_faithfulness": 1.0,
+      "dimensions": {
+        "trajectory_determinism": 1.0,
+        "decision_determinism": 1.0,
+        "faithfulness": 0.0,
+        "consistency_under_repetition": 1.0
+      },
+      "by_failure_class": {
+        "drift": 1.0,
+        "order_sensitivity": 1.0,
+        "resilience": 0.75,
+        "robustness": 0.75,
+        "security": 1.0,
+        "spec_compliance": 0.75,
+        "timeout_handling": 1.0
+      },
+      "n_scenarios": 7,
+      "n_steps": 5,
+      "rank": 2
+    },
+    {
+      "name": "calc_agent_v2 (off-by-one)",
+      "framework": "raw",
+      "model": "echo/echo-1",
+      "volo_score": 88,
+      "verdict": "no_ship",
+      "baseline_faithfulness": 1.0,
+      "dimensions": {
+        "trajectory_determinism": 1.0,
+        "decision_determinism": 1.0,
+        "faithfulness": 0.0,
+        "consistency_under_repetition": 1.0
+      },
+      "by_failure_class": {
+        "drift": 1.0,
+        "order_sensitivity": 1.0,
+        "resilience": 0.75,
+        "robustness": 0.75,
+        "security": 1.0,
+        "spec_compliance": 0.75,
+        "timeout_handling": 1.0
+      },
+      "n_scenarios": 7,
+      "n_steps": 5,
+      "rank": 3
+    },
+    {
+      "name": "echo_agent",
+      "framework": "raw",
+      "model": "echo/echo-1",
+      "volo_score": 88,
+      "verdict": "no_ship",
+      "baseline_faithfulness": 1.0,
+      "dimensions": {
+        "trajectory_determinism": 1.0,
+        "decision_determinism": 1.0,
+        "faithfulness": 0.0,
+        "consistency_under_repetition": 1.0
+      },
+      "by_failure_class": {
+        "drift": 1.0,
+        "order_sensitivity": 1.0,
+        "resilience": 0.75,
+        "robustness": 0.75,
+        "security": 0.75,
+        "spec_compliance": 0.75,
+        "timeout_handling": 1.0
+      },
+      "n_scenarios": 7,
+      "n_steps": 2,
+      "rank": 4
+    },
+    {
+      "name": "flaky_agent (nondeterministic)",
+      "framework": "raw",
+      "model": "echo/echo-1",
+      "volo_score": 21,
+      "verdict": "no_ship",
+      "baseline_faithfulness": 0.0,
+      "dimensions": {
+        "trajectory_determinism": 1.0,
+        "decision_determinism": 0.333,
+        "faithfulness": 0.0,
+        "consistency_under_repetition": 0.333
+      },
+      "by_failure_class": {
+        "drift": 0.417,
+        "order_sensitivity": 0.417,
+        "resilience": 0.417,
+        "robustness": 0.417,
+        "security": 0.417,
+        "spec_compliance": 0.75,
+        "timeout_handling": 0.417
+      },
+      "n_scenarios": 7,
+      "n_steps": 1,
+      "rank": 5
+    }
+  ]
+}

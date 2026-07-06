@@ -1,0 +1,39 @@
+# Volo reliability leaderboard — weekly rebuild (template).
+#
+# Copy into .github/workflows/. Regenerates benchmarks/leaderboard.{json,md,html} from the
+# example agents and commits them back. The leaderboard is a static artifact (deterministic,
+# no live models, no API cost) — serve benchmarks/leaderboard.html via GitHub Pages, or read the
+# committed Markdown table. $0 infra.
+
+name: volo-leaderboard
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  leaderboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install project
+        run: uv sync
+
+      - name: Rebuild the leaderboard
+        run: uv run python benchmarks/leaderboard.py
+
+      - name: Commit refreshed leaderboard (if changed)
+        run: |
+          git config user.name "volo-leaderboard[bot]"
+          git config user.email "leaderboard@users.noreply.github.com"
+          git add benchmarks/leaderboard.json benchmarks/leaderboard.md benchmarks/leaderboard.html
+          git commit -m "chore(leaderboard): weekly rebuild" || echo "no changes"
+          git push

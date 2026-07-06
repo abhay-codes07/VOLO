@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Volo Reliability Leaderboard</title>
+<style>
+  body{background:#0A0E14;color:#c9d1d9;font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+    max-width:900px;margin:3rem auto;padding:0 1rem}
+  h1{color:#e6edf3;font-weight:600;letter-spacing:-.02em}
+  .sub{color:#768390;margin-bottom:2rem}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:.5rem .6rem;border-bottom:1px solid #21262d;text-align:left}
+  th{color:#768390;font-weight:400;text-transform:uppercase;font-size:11px;letter-spacing:.08em}
+  tr:hover td{background:#0d1117}
+</style></head><body>
+<h1>Volo Reliability Leaderboard</h1>
+<p class="sub">Example agents scored across the full adversarial scenario suite —
+deterministic (seed=0, 3 runs/scenario). Volo Score = 50% clean-run correctness +
+50% adversarial robustness (0-100).</p>
+<table><thead><tr>
+<th>#</th><th>Agent</th><th>Framework</th><th style="text-align:right">Volo Score</th><th>Verdict</th>
+<th style="text-align:right">Baseline</th>
+<th style="text-align:right">Trajectory</th><th style="text-align:right">Decision</th>
+<th style="text-align:right">Faithful</th><th style="text-align:right">Consistency</th>
+</tr></thead><tbody>
+<tr><td>1</td><td><b>research_agent</b></td><td>raw</td><td style="text-align:right"><b>91</b></td><td style="color:#fa5252">no_ship</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#fa5252;font-variant-numeric:tabular-nums">0.30</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td></tr>
+<tr><td>2</td><td><b>calc_agent</b></td><td>raw</td><td style="text-align:right"><b>88</b></td><td style="color:#fa5252">no_ship</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#fa5252;font-variant-numeric:tabular-nums">0.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td></tr>
+<tr><td>3</td><td><b>calc_agent_v2 (off-by-one)</b></td><td>raw</td><td style="text-align:right"><b>88</b></td><td style="color:#fa5252">no_ship</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#fa5252;font-variant-numeric:tabular-nums">0.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td></tr>
+<tr><td>4</td><td><b>echo_agent</b></td><td>raw</td><td style="text-align:right"><b>88</b></td><td style="color:#fa5252">no_ship</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#fa5252;font-variant-numeric:tabular-nums">0.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td></tr>
+<tr><td>5</td><td><b>flaky_agent (nondeterministic)</b></td><td>raw</td><td style="text-align:right"><b>21</b></td><td style="color:#fa5252">no_ship</td><td style="text-align:right;color:#fa5252;font-variant-numeric:tabular-nums">0.00</td><td style="text-align:right;color:#12b886;font-variant-numeric:tabular-nums">1.00</td><td style="text-align:right;color:#fa5252;font-variant-numeric:tabular-nums">0.33</td><td style="text-align:right;color:#fa5252;font-variant-numeric:tabular-nums">0.00</td><td style="text-align:right;color:#fa5252;font-variant-numeric:tabular-nums">0.33</td></tr>
+</tbody></table>
+</body></html>
