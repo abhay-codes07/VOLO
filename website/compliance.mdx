@@ -1,0 +1,59 @@
+---
+title: "Compliance evidence packs"
+description: "Turn Volo's reliability, red-team, and drift reports into a signed, deterministic evidence pack mapped to EU AI Act / ISO 42001 / SOC 2 controls."
+---
+
+Regulated buyers and auditors ask for *evidence* that an agent was tested — not a screenshot, a
+document they can verify. Volo already produces the reports; `volo compliance` bundles them into a
+**signed, deterministic evidence pack** mapped to control frameworks, so the answer to "prove your
+agent was tested" is a single verifiable file.
+
+<Warning>
+The control mapping is a **reasonable-effort aid, not legal advice.** Its value is that the
+evidence is deterministic, checksummed, and replayable — how it maps to *your* obligations is your
+(and your auditor's) call.
+</Warning>
+
+## Build
+
+Point it at the artifacts you already generate — a reliability report (`volo run --out`), a
+red-team safety annex (`volo redteam --out`), a drift report (`volo shadow check --report`):
+
+```bash
+uv run volo compliance build --agent support-bot \
+  --reliability report.json --safety annex.json --drift drift.json \
+  --framework all --out evidence.json --md evidence.md --sign my-org
+# compliance: ok eu_ai_act/Art.15-robustness satisfied - Accuracy & robustness
+# compliance: ok iso_42001/8.4-security  satisfied - AI system security testing
+# compliance: 10 satisfied, 0 partial, 0 unmet -> evidence.json (signed by 'my-org')
+```
+
+Each control is `satisfied` (passing evidence present), `partial` (evidence present but not
+passing), or `unmet` (evidence absent) — a control is only as strong as its weakest required
+evidence. `--require-satisfied` exits 8 if any control is unmet, so a release pipeline can gate on
+it.
+
+## Verify
+
+The pack carries a content checksum (which excludes the volatile timestamp, so re-generating from
+the same evidence is byte-reproducible) and an optional HMAC signature:
+
+```bash
+uv run volo compliance verify evidence.json --keyring keyring.json
+# compliance verify: support-bot checksum OK
+# compliance verify: signature by 'my-org' -> VALID
+```
+
+Any edit to the evidence or controls breaks the checksum (`CHECKSUM MISMATCH`, exit 1); an
+altered pack can't pass its own signature.
+
+## Frameworks covered
+
+| Framework | Example controls | Satisfied by |
+|---|---|---|
+| EU AI Act | Art. 15 robustness/cybersecurity, Art. 9 risk mgmt, Art. 72 monitoring | reliability, red-team, drift |
+| ISO/IEC 42001 | 8.3 verification, 8.4 security, 9.1 monitoring | reliability, red-team, drift |
+| SOC 2 | CC7.1 testing, CC7.2 monitoring, CC8.1 change mgmt | reliability, drift |
+
+Signing uses the same HMAC scheme as [pack signing](/packs) (shared-secret; an asymmetric upgrade
+is the documented next step).

@@ -158,6 +158,16 @@ uv run volo pack sign pack.json --publisher <name>
 uv run volo pack verify pack.json --keyring keyring.json
 ```
 
+## `volo compliance build` / `verify`
+Bundle reliability / red-team / drift reports into a signed, deterministic evidence pack mapped to
+EU AI Act / ISO 42001 / SOC 2 controls; `--require-satisfied` exits 8 on any unmet control.
+`verify` checks the checksum (and signature with `--keyring`). See [Compliance](/compliance).
+```bash
+uv run volo compliance build --agent NAME [--reliability r.json] [--safety a.json] [--drift d.json] \
+  [--framework all] [--out evidence.json] [--md report.md] [--sign PUBLISHER] [--require-satisfied]
+uv run volo compliance verify evidence.json [--keyring keyring.json]
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 

@@ -229,8 +229,19 @@ Goal: verified publishers — pack signing + a curated public seed registry.
 - [x] Seed public registry `registry/` (built-in attacks/personas/scenarios packs + index)
 - [x] Tag v3.0.0
 
-**Wave 3 (v2.1 → v3.0) complete.** Next: wave 4 — cloud control plane (M26), hosted Tier-2
-sim-minutes (M27), PR-check app (M28), compliance evidence packs (M29), RBAC/SSO/audit (M30).
+**Wave 3 (v2.1 → v3.0) complete.**
+
+## v3.1.0 — M29: compliance evidence packs ✅ (wave 4, OSS-first)
+Goal: turn Volo's reports into signed, deterministic audit evidence mapped to control frameworks.
+
+- [x] `volo-compliance`: control catalog (EU AI Act / ISO 42001 / SOC 2) + `build_evidence_pack`
+      evaluating each control against reliability / red-team / drift evidence — ADR-0029
+- [x] `EvidencePack` — reproducible content checksum (excludes timestamp) + optional HMAC
+      signature (`sign_evidence` / `verify_evidence`); Markdown + self-contained HTML report
+- [x] `volo compliance build|verify` — `--require-satisfied` exits 8; `verify` exit 1 on
+      checksum/signature failure
+- [ ] Wave 4 remaining (needs founder call): M26 cloud control plane (paid), M27 hosted sim-minutes,
+      M28 PR-check GitHub App (OSS), M30 RBAC/SSO. M23 VS Code deferred.
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.
