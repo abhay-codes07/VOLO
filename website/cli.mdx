@@ -113,6 +113,16 @@ block. See [Model-migration lab](/migrate).
 uv run volo migrate <baseline> <candidate> [--from LABEL] [--to LABEL] [--judge heuristic|ollama|groq] [--out report.json]
 ```
 
+## `volo persona run` / `list` / `export`
+Drive a multi-turn agent against a seeded persona (simulated user/counterparty); print the
+conversation + goal verdict. `--require-goal` exits 6 if the agent misses the goal. See
+[Simulated users](/personas).
+```bash
+uv run volo persona run --agent <module:fn> --persona <name|pack.json> [--recording rec.json] [--require-goal] [--out conv.json]
+uv run volo persona list
+uv run volo persona export <name> out.json
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 

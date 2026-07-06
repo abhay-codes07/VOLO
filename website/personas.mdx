@@ -1,0 +1,64 @@
+---
+title: "Simulated users & counterparties"
+description: "Test multi-turn agents deterministically: a seeded persona answers the agent's clarifying questions, no model needed."
+---
+
+Multi-turn agents ask questions — "which destination?", "confirm the refund?" — and you can't
+unit-test that against a real human. `volo persona` gives you a **seeded, deterministic
+counterparty**: a persona that answers the agent's questions from a fixed script, so a
+conversational agent becomes a reproducible CI test. No model call, no cost, same result every
+run.
+
+## How it works
+
+A `PersonaEnvironment` wraps the normal simulator and intercepts the agent's "ask the user" tool
+calls (`ask_user`, `clarify`, …), routing them to the persona while every other tool/model call
+passes through to the Tier-1 replay. Your agent runs unchanged — it just gets persona answers.
+
+```bash
+uv run volo persona run --agent my_package.agent:run --persona decisive-traveler
+# persona: decisive-traveler - goal: book a one-way flight to Tokyo in economy
+# persona:  [1] agent> What is your destination?
+# persona:      user> Tokyo
+# persona:  [2] agent> Which cabin class would you like?
+# persona:      user> economy
+# persona: final -> {"summary": "one-way flight to Tokyo in economy", ...}
+# persona: 3 turn(s) -> GOAL MET
+```
+
+## Personas are data
+
+A persona answers in a fixed precedence: keyword-matched **facts** first, then an ordered
+**script** of fallback lines, then a default. `expected` markers define the goal — if they all
+appear in the agent's final output, the goal is met.
+
+```json
+{
+  "name": "decisive-traveler",
+  "goal": "book a one-way flight to Tokyo in economy",
+  "facts": { "destination": "Tokyo", "class": "economy", "one-way or round": "one-way" },
+  "script": ["Yes, that works.", "Go ahead and book it."],
+  "expected": ["Tokyo"]
+}
+```
+
+`volo persona list` shows the built-ins; `volo persona export <name> out.json` gives you an
+editable starting point. Packs are the seed for the persona marketplace.
+
+## As a CI gate
+
+```bash
+uv run volo persona run --agent app:run --persona traveler.json --require-goal   # exit 6 if unmet
+```
+
+`--require-goal` exits **6** when the agent doesn't reach the persona's goal — distinct from the
+reliability (1), drift (3), red-team (4), and migration (5) gates. `--out conv.json` writes the
+full transcript + verdict; `--recording rec.json` supplies replayed responses for the agent's
+*non-user* tools.
+
+## Counterparties, not just users
+
+The same mechanism models any counterparty — a sub-agent or another agent in an orchestrator.
+Give it a persona and point the agent's delegation tool at it; the seeded answers make a
+multi-agent system testable as a system. See `examples/clarifying_agent.py` for a runnable
+multi-turn agent.

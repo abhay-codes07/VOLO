@@ -164,4 +164,13 @@ Goal: "will my agent survive the next model?" — reliability + cost delta acros
 - [x] `MigrationReport` → recommendation `recommend` / `review` / `block`; projected cost delta
       from `volo_models.pricing` (promoted to a public module, shared with `FrontierProvider`)
 - [x] `volo migrate <baseline> <candidate> --from --to [--judge] [--out]` — exit 5 on block
-- [ ] M17: simulated users & counterparties (persona-driven, seeded)
+
+## v1.8.0 — M17: simulated users & counterparties ✅
+Goal: test multi-turn agents deterministically — a seeded persona answers the agent's questions.
+
+- [x] `volo-personas`: `Persona` (facts → script → default resolution, JSON packs),
+      `SimulatedUser`, `PersonaEnvironment` (wraps the sim, intercepts ask_user tools) — ADR-0021
+- [x] `drive_persona` → `ConversationReport` (transcript + goal_met via `expected` markers)
+- [x] `volo persona run|list|export` — `--require-goal` exits 6 on unmet goal
+- [x] `examples/clarifying_agent.py` — a runnable multi-turn agent
+- [ ] M18: long-horizon rig (memory drift / context rot over N episodes)
