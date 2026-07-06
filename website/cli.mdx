@@ -130,6 +130,16 @@ reliability decays. Exit 7 on `degrades`. See [Long-horizon rig](/horizon).
 uv run volo horizon <recording> --agent <module:fn> [-n 20] [--judge heuristic|ollama|groq] [--out report.json]
 ```
 
+## `volo pack init` / `validate` / `install` / `list`
+Build, verify, and install versioned content packs (attacks / personas / scenarios). `validate`
+checks manifest + checksum + item schema (exit 1 on failure). See [Content packs](/packs).
+```bash
+uv run volo pack init <kind> out.json [--name N] [--version 1.0.0]
+uv run volo pack validate pack.json
+uv run volo pack install pack.json [--dir ./.volo/packs] [--force]
+uv run volo pack list
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 

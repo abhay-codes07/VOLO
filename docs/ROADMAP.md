@@ -197,5 +197,16 @@ Goal: perf pass, recording-format v2, docs overhaul — tag v2.0.0.
       distinct gate exit codes documented
 - [x] Tag v2.0.0
 
-**Wave 2 (v1.1 → v2.0) complete.** Next: wave 3 — pack format + registry (M20-21), framework
-adapters v2 (M22), VS Code extension (M23), public leaderboard (M24), marketplace GA (M25).
+**Wave 2 (v1.1 → v2.0) complete.**
+
+## v2.1.0 — M20: pack format + `volo pack` ✅ (wave 3 opens)
+Goal: turn adversarial content into versioned, checksummed, shareable bundles — the marketplace
+inventory.
+
+- [x] `volo-packs`: `Pack` (manifest + items), semver + content-checksum, per-kind item
+      validation (attacks / personas / scenarios) — ADR-0024
+- [x] `PackStore` — local install dir + index, dedupe by `name@version`, tamper-safe install
+- [x] `volo pack init|validate|install|list` — `init` seeds from built-ins; `validate` exit 1 on
+      bad checksum/schema
+- [ ] M21: git-backed registry index (publish / install-by-name; $0 infra)
+- [ ] M22 adapters v2 · M23 VS Code · M24 public leaderboard · M25 marketplace GA

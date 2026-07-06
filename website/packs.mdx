@@ -1,0 +1,61 @@
+---
+title: "Content packs"
+description: "Versioned, checksummed bundles of attacks, personas, or scenarios — the shareable unit of the Volo marketplace."
+---
+
+Volo's adversarial content — [attack corpora](/redteam), [personas](/personas), scenario
+selections — is all data. **Packs** make that data a versioned, verifiable, shareable artifact:
+one JSON file with a manifest (name, semver, kind, checksum) and its items. The checksum makes
+tampering and corruption detectable; semver makes upgrades sane. Packs are the unit the registry
+and marketplace trade in.
+
+## Lifecycle
+
+```bash
+# start from Volo's built-in library for a kind
+uv run volo pack init attacks acme-security.json --name acme-security --version 1.0.0
+# edit acme-security.json — add your domain-specific attacks
+
+# verify manifest + checksum + every item's schema
+uv run volo pack validate acme-security.json     # -> VALID  (exit 0)
+
+# install into the local pack store (validates first)
+uv run volo pack install acme-security.json
+uv run volo pack list
+# pack list: acme-security@1.0.0 [attacks] 54 item(s)
+```
+
+If a pack's items are edited without rebuilding, `validate` catches it:
+
+```
+pack validate: !! checksum mismatch: manifest 56c7f215e11a... != actual 0126827aa73c...
+pack validate: acme-security@1.0.0 -> INVALID (2 problem(s))     (exit 1)
+```
+
+## Format
+
+```json
+{
+  "manifest": {
+    "name": "acme-security",
+    "version": "1.0.0",
+    "kind": "attacks",
+    "checksum": "<sha256 of the canonicalized items>",
+    "n_items": 54,
+    "author": "acme",
+    "pack_format": "1",
+    "volo_min_version": "2.0.0"
+  },
+  "items": [ /* kind-specific: attacks | personas | scenarios */ ]
+}
+```
+
+| Kind | Items are… | Built from |
+|---|---|---|
+| `attacks` | red-team probes (`id`, `attack_class`, `payload`, `canary`) | `volo redteam export` / `pack init attacks` |
+| `personas` | simulated users (`name`, `facts`, `script`, `expected`) | `volo persona export` / `pack init personas` |
+| `scenarios` | scenario selections (`op`, `seed`, `params`) | `pack init scenarios` |
+
+`volo pack init` seeds any kind from Volo's built-in library, so the fastest way to a custom pack
+is to start from the defaults and edit. The registry (publish / install-by-name) builds on this
+same on-disk format — coming next on the [roadmap](https://github.com/abhay-codes07/VOLO/blob/main/docs/ROADMAP.md).
