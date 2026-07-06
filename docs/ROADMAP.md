@@ -173,4 +173,15 @@ Goal: test multi-turn agents deterministically — a seeded persona answers the 
 - [x] `drive_persona` → `ConversationReport` (transcript + goal_met via `expected` markers)
 - [x] `volo persona run|list|export` — `--require-goal` exits 6 on unmet goal
 - [x] `examples/clarifying_agent.py` — a runnable multi-turn agent
-- [ ] M18: long-horizon rig (memory drift / context rot over N episodes)
+
+## v1.9.0 — M18: long-horizon rig ✅
+Goal: surface memory drift / context rot / accumulation — the failure class too expensive to
+test live, a for-loop in the sim.
+
+- [x] `volo-longhorizon`: `run_long_horizon` replays a task N times threading memory forward,
+      re-scoring each episode; deterministic (Tier-1 replay) — ADR-0022
+- [x] Longitudinal dimensions on top of DFAH: `stability`, `output_consistency`,
+      `faithfulness_slope`, `first_degraded_episode`; verdict `stable` / `degrades`
+- [x] `volo horizon <recording> --agent -n N` — faithfulness sparkline; exit 7 on degrade
+- [x] `examples/drifting_agent.py` — `stable` (holds) vs `drifting` (context rot at a threshold)
+- [ ] M19: v2.0 hardening (perf pass, recording-format v2, docs overhaul)

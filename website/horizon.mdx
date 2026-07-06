@@ -1,0 +1,50 @@
+---
+title: "Long-horizon rig (memory drift / context rot)"
+description: "Replay a task for N episodes with memory threaded forward, and watch reliability decay — the failure class that's too expensive to test live."
+---
+
+Some agents pass every single-shot test and still rot over a long session: memory bloats, context
+drifts, small errors accumulate. You can't afford to test that against a live model for 50 turns —
+but in the simulator it's a for-loop. `volo horizon` replays the same task for N episodes,
+threading the agent's memory forward, and measures how the reliability surface decays.
+
+## How it works
+
+Each episode, the agent is called with `{"episode": i, "memory": [prior outputs], ...}` and runs
+against Tier-1 replay of the recording (tools answer identically every episode). The rig appends
+each output to `memory` and passes it forward, then scores the run. Agents that ignore memory stay
+flat; agents that let it corrupt them degrade.
+
+```bash
+uv run volo horizon recordings/agent.json --agent my_package.agent:run -n 20
+# horizon: my_package.agent:run over 20 episode(s)
+# horizon: faithfulness [@@@@@@@@@@@@@@@       ] 1.00 -> 0.00
+# horizon: stability 1.00  output-consistency 0.75  slope -0.0500
+# horizon: first degraded at episode 15
+# horizon: verdict -> DEGRADES        (exit 7)
+```
+
+The faithfulness sparkline is the whole story at a glance: a flat line is a healthy agent, a
+cliff is context rot — and the rig names the episode where it started.
+
+## What it measures
+
+Longitudinal dimensions on top of the DFAH four:
+
+| Dimension | Meaning |
+|---|---|
+| `stability` | fraction of episodes whose **tool path** matches episode 0 |
+| `output_consistency` | fraction whose **output** matches episode 0 |
+| `faithfulness_slope` | least-squares slope of faithfulness over episodes (< 0 = decay) |
+| `first_degraded_episode` | the episode faithfulness first dropped (or errored) |
+
+The verdict is `degrades` if any of these show instability, else `stable`. `volo horizon` exits
+**7** on `degrades` — distinct from reliability (1), drift (3), red-team (4), migration (5), and
+persona (6). `--out report.json` writes the full per-episode record; `--judge ollama|groq` swaps
+the faithfulness judge.
+
+## Example
+
+`examples/drifting_agent.py` ships two agents: `stable` (answers from the tool every episode) and
+`drifting` (accumulates memory and goes ungrounded once it piles up past a threshold). Run both to
+see a flat sparkline versus a cliff.

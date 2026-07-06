@@ -123,6 +123,13 @@ uv run volo persona list
 uv run volo persona export <name> out.json
 ```
 
+## `volo horizon`
+Long-horizon drift rig: replay a task for N episodes with memory threaded forward; report how
+reliability decays. Exit 7 on `degrades`. See [Long-horizon rig](/horizon).
+```bash
+uv run volo horizon <recording> --agent <module:fn> [-n 20] [--judge heuristic|ollama|groq] [--out report.json]
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 
