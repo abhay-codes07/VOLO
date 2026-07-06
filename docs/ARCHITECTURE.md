@@ -75,6 +75,11 @@ packages, each a thin composition over `volo-core` + the simulator, each with it
 | `volo-longhorizon` | M18 / ADR-0022 | **Long-horizon rig**: N-episode replay with memory threaded forward; drift/rot dimensions, `volo horizon`. |
 | `pytest-volo` | M12 / ADR-0016 | pytest plugin — the engine behind `@pytest.mark.volo_recording` + fixtures. |
 
+**Framework integrations (M7 + M22):** `integrations/{langgraph, openai_agents, crewai, autogen,
+pydantic_ai, semantic_kernel}` — each a thin `wrap()` (proxy swap + `decision` step) +
+`import_<fw>_otel()` over the shared `import_otel_trace` seam; duck-typed, deps `volo-core` +
+`volo-sdk` only (ADR-0026).
+
 All compose through the same `SimulatedEnvironment` + `current_environment` seam, so nothing above
 reaches into another's internals. CLI gate exit codes are distinct: reliability **1**, shadow
 drift **3**, red-team **4**, migration-block **5**, persona-goal **6**, horizon-degrade **7**.

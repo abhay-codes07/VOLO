@@ -1,0 +1,50 @@
+---
+title: "Framework integrations"
+description: "Wrap any agent framework so Volo captures every model + tool call — six frameworks, one wrap() shape."
+---
+
+Volo instruments any framework through a thin adapter: `wrap()` swaps the framework's model/tool
+objects with Volo capture proxies, and `import_*_otel()` turns an OTel trace into a Volo Recording.
+The shape is identical across frameworks, so learning one is learning all six.
+
+| Framework | Package | `wrap()` swaps |
+|---|---|---|
+| LangGraph | `volo-langgraph` | graph model + tool nodes |
+| OpenAI Agents SDK | `volo-openai-agents` | `agent.model` + tools |
+| CrewAI | `volo-crewai` | each agent's `llm` + tools; kickoff decision |
+| **AutoGen** | `volo-autogen` | `model_client` (v0.4) or `llm` (0.2) + tools |
+| **Pydantic AI** | `volo-pydantic-ai` | `agent.model` + tools |
+| **Semantic Kernel** | `volo-semantic-kernel` | `kernel.services` + plugins |
+
+## Usage
+
+```python
+from volo_autogen import wrap
+from volo_sdk import record
+
+agent = wrap(my_autogen_agent, model=my_model, tools=my_tools)
+
+with record(agent_name="support-bot", framework="autogen"):
+    agent.run()          # every model + tool call is captured
+# → ./.volo/recordings/<run_id>.json — now replay, score, fuzz, migrate, red-team it
+```
+
+Each `wrap()` also records a `decision` step per run so the trajectory keeps the framework's
+structure visible. Prefer to instrument via OpenTelemetry instead? Every integration ships an
+importer:
+
+```python
+from volo_pydantic_ai import import_pydantic_ai_otel
+recording = import_pydantic_ai_otel("trace.jsonl", agent_name="support-bot")
+```
+
+The importers accept JSONL, OTLP-JSON, or a bare span array (the shared `import_otel_trace` seam),
+so a trace exported from any OTel-instrumented run becomes a replayable recording — no code change
+to the agent.
+
+## Once captured, everything applies
+
+A recording is a recording regardless of which framework produced it, so the whole platform works
+on all six: deterministic [replay & scoring](/ci), [MCP simulation](/mcp),
+[red-teaming](/redteam), the [migration lab](/migrate), [personas](/personas), and the
+[long-horizon rig](/horizon).

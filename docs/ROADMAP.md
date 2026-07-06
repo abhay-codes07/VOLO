@@ -210,6 +210,15 @@ inventory.
       bad checksum/schema
 - [x] M21: git-backed registry index (publish / install-by-name; $0 infra) — ADR-0025
 
+## v2.3.0 — M22: framework adapters v2 ✅
+Goal: extend M7's `wrap()` + OTel-import pattern to three more frameworks.
+
+- [x] `integrations/autogen` (`volo-autogen`) — v0.4 `model_client` + legacy `llm`
+- [x] `integrations/pydantic_ai` (`volo-pydantic-ai`) — `agent.model` + `run_sync`
+- [x] `integrations/semantic_kernel` (`volo-semantic-kernel`) — `kernel.services` + `invoke`
+- [x] Each: `wrap()` (proxy swap + decision step) + `import_*_otel()`; fake-based tests (ADR-0026)
+- [ ] M23 VS Code · M24 public leaderboard · M25 marketplace GA
+
 ## v2.2.0 — M21: git-backed pack registry ✅
 Goal: publish/install packs by name with no registry service — a JSON index in a git repo.
 
