@@ -9,7 +9,7 @@ dependencies = []
 package = false
 
 [tool.uv.workspace]
-members = ["packages/*", "services/api", "integrations/langgraph", "integrations/openai_agents", "integrations/crewai"]
+members = ["packages/*", "services/api", "integrations/langgraph", "integrations/openai_agents", "integrations/crewai", "integrations/autogen", "integrations/pydantic_ai", "integrations/semantic_kernel"]
 
 [tool.uv.sources]
 volo-core           = { workspace = true }
@@ -33,6 +33,9 @@ volo-api            = { workspace = true }
 volo-langgraph      = { workspace = true }
 volo-openai-agents  = { workspace = true }
 volo-crewai         = { workspace = true }
+volo-autogen        = { workspace = true }
+volo-pydantic-ai    = { workspace = true }
+volo-semantic-kernel = { workspace = true }
 
 [dependency-groups]
 dev = [

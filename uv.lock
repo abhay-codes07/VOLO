@@ -10,6 +10,7 @@ resolution-markers = [
 members = [
     "pytest-volo",
     "volo-api",
+    "volo-autogen",
     "volo-cli",
     "volo-core",
     "volo-crewai",
@@ -22,11 +23,13 @@ members = [
     "volo-openai-agents",
     "volo-packs",
     "volo-personas",
+    "volo-pydantic-ai",
     "volo-redteam",
     "volo-reliability",
     "volo-runner",
     "volo-scenarios",
     "volo-sdk",
+    "volo-semantic-kernel",
     "volo-shadow",
     "volo-simulator",
     "volo-workspace",
@@ -991,6 +994,21 @@ requires-dist = [
 provides-extras = ["serve"]
 
 [[package]]
+name = "volo-autogen"
+version = "0.1.0"
+source = { editable = "integrations/autogen" }
+dependencies = [
+    { name = "volo-core" },
+    { name = "volo-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "volo-core", editable = "packages/volo-core" },
+    { name = "volo-sdk", editable = "packages/volo-sdk" },
+]
+
+[[package]]
 name = "volo-cli"
 version = "0.1.0"
 source = { editable = "packages/volo-cli" }
@@ -1199,6 +1217,21 @@ requires-dist = [
 ]
 
 [[package]]
+name = "volo-pydantic-ai"
+version = "0.1.0"
+source = { editable = "integrations/pydantic_ai" }
+dependencies = [
+    { name = "volo-core" },
+    { name = "volo-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "volo-core", editable = "packages/volo-core" },
+    { name = "volo-sdk", editable = "packages/volo-sdk" },
+]
+
+[[package]]
 name = "volo-redteam"
 version = "0.1.0"
 source = { editable = "packages/volo-redteam" }
@@ -1269,6 +1302,21 @@ dependencies = [
 requires-dist = [
     { name = "pydantic", specifier = ">=2.9" },
     { name = "volo-core", editable = "packages/volo-core" },
+]
+
+[[package]]
+name = "volo-semantic-kernel"
+version = "0.1.0"
+source = { editable = "integrations/semantic_kernel" }
+dependencies = [
+    { name = "volo-core" },
+    { name = "volo-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "volo-core", editable = "packages/volo-core" },
+    { name = "volo-sdk", editable = "packages/volo-sdk" },
 ]
 
 [[package]]
