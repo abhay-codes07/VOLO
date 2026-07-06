@@ -184,4 +184,18 @@ test live, a for-loop in the sim.
       `faithfulness_slope`, `first_degraded_episode`; verdict `stable` / `degrades`
 - [x] `volo horizon <recording> --agent -n N` — faithfulness sparkline; exit 7 on degrade
 - [x] `examples/drifting_agent.py` — `stable` (holds) vs `drifting` (context rot at a threshold)
-- [ ] M19: v2.0 hardening (perf pass, recording-format v2, docs overhaul)
+
+## v2.0.0 — M19: hardening (closes wave 2) ✅
+Goal: perf pass, recording-format v2, docs overhaul — tag v2.0.0.
+
+- [x] Perf pass: `benchmarks/replay_throughput.py` + throughput guard test (floor 10k steps/min;
+      measured ≫ 5M steps/min — no optimization needed) — ADR-0023
+- [x] Recording persistence v2: gzip-aware `save_recording`/`load_recording`, cheap
+      `recording_header`, `RecorderConfig.compress`; schema-migration seam (`register_migration`,
+      `load_recording` upgrades before validating) — schema stays additive at 1.0.0 (ADR-0023)
+- [x] Docs overhaul: ARCHITECTURE.md gains the expansion-packages map (§2a) + persistence note;
+      distinct gate exit codes documented
+- [x] Tag v2.0.0
+
+**Wave 2 (v1.1 → v2.0) complete.** Next: wave 3 — pack format + registry (M20-21), framework
+adapters v2 (M22), VS Code extension (M23), public leaderboard (M24), marketplace GA (M25).

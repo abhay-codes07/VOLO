@@ -58,7 +58,32 @@ agent ─►│ instruments any framework; records every model      │
 | (5) Runner | `volo-runner` | Orchestrates: load recording → build sim → for each scenario, run agent → score. Deterministic seed handling. |
 | (6) Diff | `volo-diff` | Bisect over recorded steps and over git history to attribute regressions. |
 | (7) Models | `volo-models` | Provider abstraction: Ollama by default, frontier APIs behind opt-in. Token + cost cap enforcement. |
-| — (entrypoint) | `volo-cli` | Typer CLI tying everything together — `volo record/sim/run/ci/diff`. |
+| — (entrypoint) | `volo-cli` | Typer CLI tying everything together — the verbs below. |
+
+## 2a. Expansion packages (v1.1 → v2.0)
+
+The seven bible subsystems are the core. The reliability *platform* extends them with additional
+packages, each a thin composition over `volo-core` + the simulator, each with its own ADR:
+
+| Package | Milestone / ADR | Purpose |
+|---|---|---|
+| `volo-mcp` | M10-M11 / ADR-0014, 0015 | Record/replay/fuzz **MCP servers**; `MCPReplayServer`, `volo mcp record\|serve\|fuzz\|conformance`. Un-recorded input → JSON-RPC `-32042` (never hallucinate). |
+| `volo-shadow` | M13-M14 / ADR-0017, 0018 | Production **shadow corpus** + nightly **drift sentinel**; `CorpusBank`, `snapshot`/`compare`, `SnapshotHistory`, `volo shadow pull\|adopt\|check\|trend`. |
+| `volo-redteam` | M15 / ADR-0019 | Adversarial **attack corpus** (54 probes × 6 classes) + `SafetyAnnex`; canary poison-and-detect, `volo redteam`. |
+| `volo-migrate` | M16 / ADR-0020 | **Model-migration lab**: pair two corpora, score reliability + cost delta, `volo migrate`. |
+| `volo-personas` | M17 / ADR-0021 | **Simulated users / counterparties**: `PersonaEnvironment` intercepts ask-user tools, `volo persona`. |
+| `volo-longhorizon` | M18 / ADR-0022 | **Long-horizon rig**: N-episode replay with memory threaded forward; drift/rot dimensions, `volo horizon`. |
+| `pytest-volo` | M12 / ADR-0016 | pytest plugin — the engine behind `@pytest.mark.volo_recording` + fixtures. |
+
+All compose through the same `SimulatedEnvironment` + `current_environment` seam, so nothing above
+reaches into another's internals. CLI gate exit codes are distinct: reliability **1**, shadow
+drift **3**, red-team **4**, migration-block **5**, persona-goal **6**, horizon-degrade **7**.
+
+**Persistence (M19 / ADR-0023):** `volo_core.persistence` adds gzip-aware `save_recording` /
+`load_recording` (transparent on a `.gz` suffix) and a schema-**migration** seam
+(`register_migration` → `load_recording` upgrades older recordings before validating). Replay
+throughput is benchmarked (`benchmarks/replay_throughput.py`) and guarded above a 10k-steps/min
+floor; measured ≫ 5M steps/min.
 
 ## 3. Hexagonal layering (bible §7.1)
 
