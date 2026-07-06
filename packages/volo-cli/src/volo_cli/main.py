@@ -7,6 +7,7 @@ import typer
 from volo_cli.commands.ci import ci_command
 from volo_cli.commands.demo import demo_command
 from volo_cli.commands.diff import diff_command
+from volo_cli.commands.horizon import horizon_command
 from volo_cli.commands.init import init_command
 from volo_cli.commands.mcp import mcp_app
 from volo_cli.commands.migrate import migrate_command
@@ -63,6 +64,9 @@ app.command("diff", help="Diff two runs and attribute regressions to a step + co
 )
 app.command("migrate", help="Compare an agent's reliability + cost across two models.")(
     migrate_command
+)
+app.command("horizon", help="Long-horizon drift rig: replay N episodes, surface context rot.")(
+    horizon_command
 )
 app.command("demo", help="Seed the data dir with showcase recordings + reports.")(demo_command)
 app.add_typer(mcp_app, name="mcp")

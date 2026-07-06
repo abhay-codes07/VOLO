@@ -25,6 +25,7 @@ volo-shadow         = { workspace = true }
 volo-redteam        = { workspace = true }
 volo-migrate        = { workspace = true }
 volo-personas       = { workspace = true }
+volo-longhorizon    = { workspace = true }
 volo-cli            = { workspace = true }
 pytest-volo         = { workspace = true }
 volo-api            = { workspace = true }
@@ -76,6 +77,7 @@ files = [
     "packages/volo-redteam/src",
     "packages/volo-migrate/src",
     "packages/volo-personas/src",
+    "packages/volo-longhorizon/src",
     "packages/pytest-volo/src",
     "packages/volo-cli/src",
     "services/api/src",
