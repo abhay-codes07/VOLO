@@ -11,6 +11,13 @@ from volo_core.context import (
     set_active_environment,
     set_active_recorder,
 )
+from volo_core.persistence import (
+    load_recording,
+    migrate_raw,
+    recording_header,
+    register_migration,
+    save_recording,
+)
 from volo_core.recording import (
     RECORDING_SCHEMA_VERSION,
     DecisionPayload,
@@ -42,11 +49,16 @@ __all__ = [
     "current_recorder",
     "get_active_environment",
     "get_active_recorder",
+    "load_recording",
+    "migrate_raw",
     "new_run_id",
+    "recording_header",
     "redact_recording",
     "redact_value",
+    "register_migration",
     "reset_active_environment",
     "reset_active_recorder",
+    "save_recording",
     "set_active_environment",
     "set_active_recorder",
 ]

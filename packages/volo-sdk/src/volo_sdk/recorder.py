@@ -13,7 +13,6 @@ real API. See ``docs/STATUS.md`` "▶ RESUME HERE" for the exact next step.
 
 from __future__ import annotations
 
-import json
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -27,6 +26,7 @@ from volo_core import (
     Step,
     current_recorder,
     redact_recording,
+    save_recording,
 )
 from volo_core.recording import StepPayload
 
@@ -41,12 +41,14 @@ class RecorderConfig:
             anything to disk.
         redaction: Tweaks for the redaction pass. ``None`` → default rules (bible §7.5).
         pretty: JSON indent on disk (set to 0 to minify).
+        compress: If True, gzip the recording (``.json.gz``). Off by default (M19 / ADR-0023).
     """
 
     data_dir: Path = field(default_factory=lambda: Path(".volo"))
     apply_redaction: bool = True
     redaction: RedactionConfig | None = None
     pretty: int = 2
+    compress: bool = False
 
 
 class Recorder:
@@ -100,20 +102,17 @@ class Recorder:
             else self.recording
         )
 
+        suffix = ".json.gz" if self.config.compress else ".json"
         if path is None:
             target_dir = self.config.data_dir / "recordings"
             target_dir.mkdir(parents=True, exist_ok=True)
-            target = target_dir / f"{rec.run_id}.json"
+            target = target_dir / f"{rec.run_id}{suffix}"
         else:
             target = Path(path)
             target.parent.mkdir(parents=True, exist_ok=True)
 
-        blob = rec.to_json(indent=self.config.pretty)
-        # round-trip through json to enforce strict UTF-8 + canonical whitespace
-        target.write_text(
-            json.dumps(json.loads(blob), indent=self.config.pretty or None) + "\n", encoding="utf-8"
-        )
-        return target
+        # save_recording gzips when the path ends in .gz; otherwise writes canonical UTF-8 JSON.
+        return save_recording(rec, target, indent=self.config.pretty)
 
 
 @contextmanager
