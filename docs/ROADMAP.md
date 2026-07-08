@@ -259,8 +259,15 @@ Goal: the first paid tier — hosted teams / workspaces / report history over th
       history — SQLite locally / Postgres via `VOLO_DB_URL`, no new dependency
 - [x] FastAPI: `/cloud/teams`, `/workspaces`, `/keys` (management via `require_principal` seam) +
       `X-Volo-Key`-gated `/workspaces/{id}/reports` scoped to the key's workspace
-- [ ] Wave 4 remaining: M23 VS Code (OSS, in progress), M27 hosted sim-minutes, M28 done, M29 done,
-      M30 RBAC/SSO (needs auth vendor).
+
+## v3.4.0 — M23: VS Code extension ✅ (OSS)
+Goal: inspect + replay recordings without leaving the editor.
+
+- [x] `apps/vscode` — "Volo: Open Trajectory View" (webview flight-path of a recording) +
+      "Volo: Replay Recording" (`volo sim` in a terminal) — ADR-0032
+- [x] Pure `trajectory.ts` (parse) + `webview.ts` (render, HTML-escaped) — no `vscode` import,
+      8 vitest tests; thin `extension.ts` glue; `tsc` typecheck clean
+- [ ] Wave 4 remaining: M27 hosted sim-minutes, M30 RBAC/SSO (needs auth vendor).
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.
