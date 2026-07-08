@@ -137,7 +137,7 @@ fabricates a tool result. Measured on a held-out benchmark (deterministic, repro
 
 ## Architecture
 
-Seven subsystems behind a CLI and a Next.js dashboard:
+The core subsystems behind a CLI and a Next.js dashboard:
 
 ```
 Capture SDK → Environment Simulator → Scenario Generator → Reliability Engine
@@ -145,15 +145,37 @@ Capture SDK → Environment Simulator → Scenario Generator → Reliability Eng
     CI Runner ───────── Root-Cause / Diff ─────────────── Cost-Routing Brain
 ```
 
+## The full pipeline (v5.0)
+
+One recorded run flows through every gate — deterministic, offline, ~$0 — and comes out the other
+side as a signed credential:
+
+```
+record → simulate → scenarios → reliability → red-team safety → CERTIFY → evidence pack → cloud
+                                     │              │               │            │
+                          ship/no-ship verdict   safe?        Volo Certified   EU AI Act /
+                                                              (signed badge)   ISO 42001 / SOC 2
+```
+
+Beyond the core testing loop, Volo now spans: **MCP** and **computer-use** record/replay,
+**multi-agent** system verdicts, **red-team** safety, **personas** & **long-horizon** simulation,
+a **marketplace** of signed scenario packs + a **leaderboard**, **compliance evidence packs**,
+**Volo Certified** (a signed pass/fail credential), a **VS Code** extension, and a commercial
+**cloud control plane** (teams / RBAC / SSO / hosted sim-minutes) — all OSS-core, Apache-2.0, with
+the paid plane isolated in `cloud/`.
+
 ## Repo layout
 
 ```
-packages/       # 10 Python packages (uv workspace) — one per subsystem + core + CLI + MCP
+packages/       # Python packages (uv workspace) — core, sdk, simulator, scenarios, reliability,
+                #   runner, diff, models, cli, mcp, redteam, personas, horizon, packs, compliance,
+                #   computeruse, multiagent, certify, …
 services/api/   # FastAPI backend (local dashboard + cloud seam)
-apps/web/       # Next.js dashboard
-integrations/   # framework adapters: langgraph, openai_agents, crewai
+apps/web/       # Next.js dashboard      apps/vscode/  # VS Code extension
+cloud/          # commercial control plane (teams / RBAC / SSO / sim-minutes) — separate license
+integrations/   # framework adapters: langgraph, openai_agents, crewai, autogen, …
 examples/       # runnable demo agents (also the CI dogfood targets)
-tests/          # cross-package integration, e2e, and fidelity benchmarks
+tests/          # cross-package integration, e2e (incl. the v5.0 full-pipeline test), benchmarks
 ```
 
 ## Tech stack
@@ -164,4 +186,5 @@ Everything runs fully locally with zero cloud accounts.
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Open-core. The entire OSS product is **Apache-2.0** (see [`LICENSE`](LICENSE)); the commercial
+control plane under [`cloud/`](cloud/) is separately licensed (see [`cloud/LICENSE`](cloud/LICENSE)).
