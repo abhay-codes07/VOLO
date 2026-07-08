@@ -5,6 +5,7 @@ from __future__ import annotations
 import typer
 
 from volo_cli.commands.ci import ci_command
+from volo_cli.commands.comment import comment_command
 from volo_cli.commands.compliance import compliance_app
 from volo_cli.commands.demo import demo_command
 from volo_cli.commands.diff import diff_command
@@ -61,6 +62,9 @@ app.command("run", help="Run an agent against scenarios; produce a reliability r
     run_command
 )
 app.command("ci", help="Block PRs that regress reliability (CI entrypoint).")(ci_command)
+app.command("comment", help="Render a sticky PR comment (reliability + optional compliance).")(
+    comment_command
+)
 app.command("diff", help="Diff two runs and attribute regressions to a step + commit.")(
     diff_command
 )

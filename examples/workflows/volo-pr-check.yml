@@ -1,0 +1,29 @@
+# Volo PR reliability check (template).
+#
+# Copy into .github/workflows/. On every PR it replays your baseline recording against the agent,
+# posts a sticky reliability (+ optional compliance) comment, and fails the check on a regression.
+# Runs entirely in your CI — no hosting, no API cost (deterministic replay).
+
+name: volo-pr-check
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write # to post/update the sticky comment
+
+jobs:
+  reliability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Volo PR reliability check
+        uses: abhay-codes07/VOLO/.github/actions/volo-pr-check@v3.0.0
+        with:
+          baseline: ./.volo/recordings/baseline.json
+          agent: my_package.agent:run
+          input: '{"query": "hello"}'
+          fail-under: "0.9"
+          # frameworks: all   # uncomment to also post a compliance evidence summary
