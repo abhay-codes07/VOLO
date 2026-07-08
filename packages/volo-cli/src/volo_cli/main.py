@@ -7,6 +7,7 @@ import typer
 from volo_cli.commands.ci import ci_command
 from volo_cli.commands.comment import comment_command
 from volo_cli.commands.compliance import compliance_app
+from volo_cli.commands.cu import cu_app
 from volo_cli.commands.demo import demo_command
 from volo_cli.commands.diff import diff_command
 from volo_cli.commands.horizon import horizon_command
@@ -81,6 +82,7 @@ app.add_typer(redteam_app, name="redteam")
 app.add_typer(persona_app, name="persona")
 app.add_typer(pack_app, name="pack")
 app.add_typer(compliance_app, name="compliance")
+app.add_typer(cu_app, name="cu")
 
 
 if __name__ == "__main__":  # pragma: no cover
