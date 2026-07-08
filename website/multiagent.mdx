@@ -1,0 +1,51 @@
+---
+title: "Multi-agent system testing"
+description: "Test an orchestrator (crew / graph / router) as a system: simulate its sub-agents as counterparties and get a healthy / broken verdict with the full message graph."
+---
+
+A multi-agent system is more than the sum of its trajectories — a hand-off to the wrong agent, a
+sub-agent that's never reached, a delegation that returns garbage. `volo multiagent` tests the
+**orchestrator as a system**: it simulates the sub-agents as deterministic counterparties and
+reports how the whole interaction went.
+
+## How it works
+
+Your orchestrator delegates to sub-agents through a tool call — `delegate` / `call_agent` /
+`handoff` with a `to` + `message`, or an `agent.<name>` tool. `MultiAgentEnvironment` intercepts
+those and routes each to the named counterparty (a persona, exactly like a
+[simulated user](/personas)); every other tool/model call passes through to replay. So the
+orchestrator runs unchanged and Volo captures the full inter-agent message graph.
+
+```bash
+uv run volo multiagent run \
+  --orchestrator my_pkg.crew:run \
+  --counterparties crew.json \
+  --input '{"topic": "volo"}' --expect draft
+# multiagent: orchestrator my_pkg.crew:run -> HEALTHY
+# multiagent: -> researcher  'research: volo'          => 'three cited sources'
+# multiagent: -> writer      'write about: sources...' => 'a polished draft'
+# multiagent: 2 delegation(s), goal_met=True -> HEALTHY
+```
+
+Counterparties are personas keyed by sub-agent name:
+
+```json
+{
+  "counterparties": {
+    "researcher": { "facts": { "research": "three cited sources" } },
+    "writer": { "facts": { "write": "a polished draft" }, "script": ["revise once"] }
+  }
+}
+```
+
+## The verdict
+
+`SystemReport` gives a **healthy / broken** verdict plus the evidence: which sub-agents were
+`reached`, which were declared but `unreached`, and any delegation to an `unknown_agent`. The
+system is **broken** if the orchestrator errored, delegated to an agent that doesn't exist, or
+missed an `--expect` output marker. `volo multiagent run` exits **9** on broken — a CI gate for
+your crew or graph. `unreached` alone isn't broken (an orchestrator needn't call every agent).
+
+The message graph is the payoff: a bad hand-off shows exactly which agent was called with what and
+what came back — the debugging a single end-to-end trajectory hides. See
+`examples/orchestrator_agent.py` for a runnable two-agent orchestrator.

@@ -184,6 +184,15 @@ uv run volo cu inspect <recording>
 uv run volo cu replay <recording>   # JSON action per line on stdin
 ```
 
+## `volo multiagent run`
+Test an orchestrator (crew/graph/router) against simulated sub-agents (counterparties as
+personas); reports which agents were reached + a healthy/broken system verdict. Exit 9 on broken.
+See [Multi-agent](/multiagent).
+```bash
+uv run volo multiagent run --orchestrator <module:fn> --counterparties crew.json \
+  [--input '{...}'] [--expect SUBSTR ...] [--recording rec.json] [--out report.json]
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 

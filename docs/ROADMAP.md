@@ -291,7 +291,16 @@ Goal: the simulator's next surface after MCP — browser/desktop agents.
       events map onto the Recording as `cu.<kind>` tool calls — ADR-0034
 - [x] `ComputerUseRecorder` + `ComputerUseReplayServer` (flag on unseen (action, screen), never
       fabricate UI); `volo cu inspect|replay`
-- [ ] Frontier wave remaining: M32 multi-agent GA, M33 "Volo Certified" program, M34 v5.0 capstone.
+
+## v3.8.0 — M32: multi-agent system testing ✅ (OSS, frontier)
+Goal: test an orchestrator as a system — simulate its sub-agents, verdict the whole interaction.
+
+- [x] `volo-multiagent`: `MultiAgentEnvironment` intercepts delegation tools
+      (`delegate`/`call_agent`/`handoff`, `agent.<name>`) → routes to persona counterparties (M17) — ADR-0036
+- [x] `run_multiagent` → `SystemReport` (reached / unreached / unknown-agent / message graph +
+      healthy/broken verdict); `volo multiagent run` exits 9 on broken
+- [x] `examples/orchestrator_agent.py` (delegates to researcher + writer)
+- [ ] Frontier remaining: M33 "Volo Certified" program, M34 v5.0 capstone.
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.
