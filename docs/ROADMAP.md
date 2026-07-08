@@ -308,7 +308,21 @@ Goal: a public, signed pass/fail credential — the "UL of agents".
       the four reliability dims x100; `CertCriteria` (require_safe + min score, opt-in require_ship) — ADR-0037
 - [x] Signed, checksummed `Certificate` (HMAC, same scheme as packs/evidence) + SVG/markdown badge
 - [x] `volo certify run|verify|badge` (run exits 10 if not certified)
-- [ ] Frontier remaining: M34 v5.0 capstone.
+
+## v5.0.0 — M34: the capstone ✅ (release)
+Goal: prove the whole charter composes — one recording through every gate — and tag v5.0.
+
+- [x] `tests/test_full_pipeline_v5.py` — one baseline flows record → reliability → red-team →
+      certify (signed) → evidence pack (signed) → cloud ingest; a second test proves the pipeline
+      *denies* a vulnerable agent — ADR-0038
+- [x] README refreshed: full-pipeline diagram, accurate package inventory, open-core license note
+- [x] **v1.1 → v5.0 charter complete.** All pillars P1–P10, milestones M1–M34 shipped.
+
+### Post-v5.0 (documented next steps, each in its ADR)
+- Asymmetric signing (Ed25519/RS256) for packs / evidence / certificates (crypto dep) — ADR-0028/0037
+- RS256/JWKS SSO for the cloud plane (crypto dep) — ADR-0035
+- Hosted infra for sim-minutes (a queue/worker machine + metering) — ADR-0033
+- A live computer-use driver (Playwright/pyautogui) feeding the recorder — ADR-0034
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.
