@@ -250,8 +250,17 @@ Goal: reliability (+ compliance) gate on every PR — entirely in the user's CI,
       `volo compliance build`, posts/updates the sticky comment via `gh` + `GITHUB_TOKEN`, fails
       the check on regression. No third-party action, no secrets.
 - [x] Workflow template `examples/workflows/volo-pr-check.yml`
-- [ ] Wave 4 remaining (needs founder call): M26 cloud control plane (paid), M27 hosted
-      sim-minutes, M30 RBAC/SSO. M23 VS Code deferred.
+
+## v3.3.0 — M26: cloud control plane MVP ✅ (commercial)
+Goal: the first paid tier — hosted teams / workspaces / report history over the OSS engine.
+
+- [x] Commercial `cloud/` dir (`volo-cloud`, own LICENSE — NOT Apache-2.0; ADR-0001/0031)
+- [x] Teams, workspaces, membership, API keys (sha256-hashed, shown once), workspace report
+      history — SQLite locally / Postgres via `VOLO_DB_URL`, no new dependency
+- [x] FastAPI: `/cloud/teams`, `/workspaces`, `/keys` (management via `require_principal` seam) +
+      `X-Volo-Key`-gated `/workspaces/{id}/reports` scoped to the key's workspace
+- [ ] Wave 4 remaining: M23 VS Code (OSS, in progress), M27 hosted sim-minutes, M28 done, M29 done,
+      M30 RBAC/SSO (needs auth vendor).
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.
