@@ -9,7 +9,7 @@ dependencies = []
 package = false
 
 [tool.uv.workspace]
-members = ["packages/*", "services/api", "integrations/langgraph", "integrations/openai_agents", "integrations/crewai", "integrations/autogen", "integrations/pydantic_ai", "integrations/semantic_kernel"]
+members = ["packages/*", "services/api", "cloud", "integrations/langgraph", "integrations/openai_agents", "integrations/crewai", "integrations/autogen", "integrations/pydantic_ai", "integrations/semantic_kernel"]
 
 [tool.uv.sources]
 volo-core           = { workspace = true }
@@ -31,6 +31,7 @@ volo-compliance     = { workspace = true }
 volo-cli            = { workspace = true }
 pytest-volo         = { workspace = true }
 volo-api            = { workspace = true }
+volo-cloud          = { workspace = true }
 volo-langgraph      = { workspace = true }
 volo-openai-agents  = { workspace = true }
 volo-crewai         = { workspace = true }
@@ -88,6 +89,7 @@ files = [
     "packages/pytest-volo/src",
     "packages/volo-cli/src",
     "services/api/src",
+    "cloud/src",
 ]
 
 [tool.pytest.ini_options]
@@ -95,7 +97,7 @@ minversion = "8.0"
 # -p pytester: enables the pytester fixture used by packages/pytest-volo's own tests
 # (pytest forbids `pytest_plugins` in non-root conftests, so it must be enabled here).
 addopts = "-ra --strict-markers -p pytester"
-testpaths = ["packages", "services", "integrations", "tests"]
+testpaths = ["packages", "services", "cloud", "integrations", "tests"]
 # All workspace packages get installed editable via `uv sync --all-packages`, so they're already
 # importable. We add the repo root so `import examples.echo_agent` resolves without install.
 pythonpath = ["."]

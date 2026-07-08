@@ -12,6 +12,7 @@ members = [
     "volo-api",
     "volo-autogen",
     "volo-cli",
+    "volo-cloud",
     "volo-compliance",
     "volo-core",
     "volo-crewai",
@@ -1045,6 +1046,32 @@ requires-dist = [
     { name = "volo-sdk", editable = "packages/volo-sdk" },
     { name = "volo-shadow", editable = "packages/volo-shadow" },
 ]
+
+[[package]]
+name = "volo-cloud"
+version = "0.1.0"
+source = { editable = "cloud" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "sqlmodel" },
+    { name = "volo-core" },
+    { name = "volo-reliability" },
+]
+
+[package.optional-dependencies]
+serve = [
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "sqlmodel", specifier = ">=0.0.21" },
+    { name = "uvicorn", extras = ["standard"], marker = "extra == 'serve'", specifier = ">=0.30" },
+    { name = "volo-core", editable = "packages/volo-core" },
+    { name = "volo-reliability", editable = "packages/volo-reliability" },
+]
+provides-extras = ["serve"]
 
 [[package]]
 name = "volo-compliance"

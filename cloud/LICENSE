@@ -1,0 +1,17 @@
+Volo Commercial License
+=======================
+
+Copyright (c) 2026 Volo. All rights reserved.
+
+This directory (`cloud/`) and its contents are the **commercial** part of Volo and are NOT
+covered by the Apache-2.0 license that governs the rest of this repository (see the root
+`LICENSE`). The open-core boundary is recorded in ADR-0001 and bible §4.3.
+
+You may read this source for evaluation and to run it locally for development and testing.
+You may NOT use it to operate a hosted or paid service, or redistribute it, without a
+separate commercial agreement with Volo.
+
+The open-source Volo engine (everything under `packages/`, `services/api/`, `apps/web/`,
+`integrations/`) remains Apache-2.0 and is unaffected by this file.
+
+For commercial terms, contact the maintainers.

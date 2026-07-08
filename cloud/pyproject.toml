@@ -1,0 +1,22 @@
+[project]
+name = "volo-cloud"
+version = "0.1.0"
+description = "Volo Cloud — commercial control plane (teams, workspaces, hosted history). NOT Apache-2.0; see ./LICENSE."
+requires-python = ">=3.12"
+license = { text = "LicenseRef-Volo-Commercial" }
+dependencies = [
+  "volo-core",
+  "volo-reliability",
+  "fastapi>=0.115",
+  "sqlmodel>=0.0.21",
+]
+
+[project.optional-dependencies]
+serve = ["uvicorn[standard]>=0.30"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/volo_cloud"]
