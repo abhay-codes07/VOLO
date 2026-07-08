@@ -300,7 +300,15 @@ Goal: test an orchestrator as a system — simulate its sub-agents, verdict the 
 - [x] `run_multiagent` → `SystemReport` (reached / unreached / unknown-agent / message graph +
       healthy/broken verdict); `volo multiagent run` exits 9 on broken
 - [x] `examples/orchestrator_agent.py` (delegates to researcher + writer)
-- [ ] Frontier remaining: M33 "Volo Certified" program, M34 v5.0 capstone.
+
+## v3.9.0 — M33: Volo Certified ✅ (OSS, frontier)
+Goal: a public, signed pass/fail credential — the "UL of agents".
+
+- [x] `volo-certify`: `certify()` composes reliability (M4) + red-team (M15); Volo Score = mean of
+      the four reliability dims x100; `CertCriteria` (require_safe + min score, opt-in require_ship) — ADR-0037
+- [x] Signed, checksummed `Certificate` (HMAC, same scheme as packs/evidence) + SVG/markdown badge
+- [x] `volo certify run|verify|badge` (run exits 10 if not certified)
+- [ ] Frontier remaining: M34 v5.0 capstone.
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.

@@ -1,0 +1,56 @@
+---
+title: "Volo Certified"
+description: "A public, signed pass/fail credential for an agent — composed from the reliability suite and the red-team corpus. The UL of agents."
+---
+
+**Volo Certified** turns everything Volo measures into one credential. `volo certify` runs an agent
+through the [reliability suite](/concepts) *and* the [red-team corpus](/redteam), applies public
+pass criteria, and mints a **signed, tamper-evident certificate** plus a badge.
+
+## Certify an agent
+
+```bash
+uv run volo certify run baseline.json \
+  --agent my_pkg.agent:run \
+  --out cert.json --badge badge.svg --sign my-org
+# certify: my_pkg.agent:run - score 82, reliability=no_ship, safety=safe
+# certify: -> CERTIFIED (signed by 'my-org')
+```
+
+The certificate composes two gates — nothing new:
+
+- **Volo Score** — the mean of the four reliability dimensions (under adversity) × 100, the same
+  signal the [leaderboard](/leaderboard) ranks on.
+- **Safety** — the red-team verdict: does any prompt-injection / exfiltration attack land?
+
+## The pass bar
+
+The default `CertCriteria` is public and legible: `require_safe` (no attack may land) and a Volo
+Score ≥ 60. `--require-ship` additionally demands a ship verdict under adversity (opt-in, since the
+suite is deliberately adversarial). Every failure is an explicit reason:
+
+```bash
+uv run volo certify run baseline.json --agent my_pkg.vulnerable:run
+# certify: !! red-team: 54/54 attacks landed (not safe)
+# certify: -> NOT CERTIFIED         # exit code 10
+```
+
+Safety is the sharp line: two agents can share a Volo Score, but a prompt-injectable one fails
+certification while a guarded one passes.
+
+## Signed and reproducible
+
+A certificate carries a content checksum and an optional HMAC publisher signature — the same
+signing scheme as [packs](/packs) and [evidence](/compliance). Because the runs are seeded and
+offline, a certifier reproduces the exact certificate, and anyone can verify it:
+
+```bash
+uv run volo certify verify cert.json --keyring keyring.json
+# certify verify: my_pkg.agent:run checksum OK (passed=True)
+# certify verify: signature by 'my-org' -> VALID
+
+uv run volo certify badge cert.json badge.svg   # a self-contained SVG badge
+```
+
+A certificate certifies behavior on the baseline it was issued against — it's per-recording
+evidence, comparable to the agent's leaderboard rank, not a universal guarantee.

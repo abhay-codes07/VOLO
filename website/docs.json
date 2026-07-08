@@ -20,7 +20,7 @@
           },
           {
             "group": "Guides",
-            "pages": ["concepts", "integrations", "ci", "pr-check", "pytest", "mcp", "computeruse", "shadow", "redteam", "migrate", "personas", "multiagent", "horizon", "packs", "leaderboard", "compliance", "fidelity"]
+            "pages": ["concepts", "integrations", "ci", "pr-check", "pytest", "mcp", "computeruse", "shadow", "redteam", "migrate", "personas", "multiagent", "horizon", "packs", "leaderboard", "compliance", "certify", "fidelity"]
           },
           {
             "group": "Reference",

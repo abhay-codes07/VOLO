@@ -193,6 +193,16 @@ uv run volo multiagent run --orchestrator <module:fn> --counterparties crew.json
   [--input '{...}'] [--expect SUBSTR ...] [--recording rec.json] [--out report.json]
 ```
 
+## `volo certify run` / `verify` / `badge`
+The Volo Certified program: run reliability + red-team, apply public criteria, emit a signed
+certificate + SVG badge. `run` exits 10 if not certified. See [Volo Certified](/certify).
+```bash
+uv run volo certify run <recording> --agent <module:fn> [--min-score N] [--require-ship] \
+  [--out cert.json] [--badge badge.svg] [--sign PUBLISHER]
+uv run volo certify verify cert.json [--keyring keyring.json]
+uv run volo certify badge cert.json badge.svg
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 
