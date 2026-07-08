@@ -30,6 +30,7 @@ volo-packs          = { workspace = true }
 volo-compliance     = { workspace = true }
 volo-computeruse    = { workspace = true }
 volo-multiagent     = { workspace = true }
+volo-certify        = { workspace = true }
 volo-cli            = { workspace = true }
 pytest-volo         = { workspace = true }
 volo-api            = { workspace = true }
@@ -90,6 +91,7 @@ files = [
     "packages/volo-compliance/src",
     "packages/volo-computeruse/src",
     "packages/volo-multiagent/src",
+    "packages/volo-certify/src",
     "packages/pytest-volo/src",
     "packages/volo-cli/src",
     "services/api/src",

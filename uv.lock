@@ -11,6 +11,7 @@ members = [
     "pytest-volo",
     "volo-api",
     "volo-autogen",
+    "volo-certify",
     "volo-cli",
     "volo-cloud",
     "volo-compliance",
@@ -1013,6 +1014,25 @@ requires-dist = [
 ]
 
 [[package]]
+name = "volo-certify"
+version = "0.1.0"
+source = { editable = "packages/volo-certify" }
+dependencies = [
+    { name = "volo-core" },
+    { name = "volo-redteam" },
+    { name = "volo-reliability" },
+    { name = "volo-runner" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "volo-core", editable = "packages/volo-core" },
+    { name = "volo-redteam", editable = "packages/volo-redteam" },
+    { name = "volo-reliability", editable = "packages/volo-reliability" },
+    { name = "volo-runner", editable = "packages/volo-runner" },
+]
+
+[[package]]
 name = "volo-cli"
 version = "0.1.0"
 source = { editable = "packages/volo-cli" }
@@ -1020,6 +1040,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "rich" },
     { name = "typer" },
+    { name = "volo-certify" },
     { name = "volo-compliance" },
     { name = "volo-computeruse" },
     { name = "volo-core" },
@@ -1039,6 +1060,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "rich", specifier = ">=13.7" },
     { name = "typer", specifier = ">=0.12" },
+    { name = "volo-certify", editable = "packages/volo-certify" },
     { name = "volo-compliance", editable = "packages/volo-compliance" },
     { name = "volo-computeruse", editable = "packages/volo-computeruse" },
     { name = "volo-core", editable = "packages/volo-core" },

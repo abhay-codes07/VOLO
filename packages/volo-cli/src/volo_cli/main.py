@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import typer
 
+from volo_cli.commands.certify import certify_app
 from volo_cli.commands.ci import ci_command
 from volo_cli.commands.comment import comment_command
 from volo_cli.commands.compliance import compliance_app
@@ -85,6 +86,7 @@ app.add_typer(pack_app, name="pack")
 app.add_typer(compliance_app, name="compliance")
 app.add_typer(cu_app, name="cu")
 app.add_typer(multiagent_app, name="multiagent")
+app.add_typer(certify_app, name="certify")
 
 
 if __name__ == "__main__":  # pragma: no cover
