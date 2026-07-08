@@ -267,7 +267,17 @@ Goal: inspect + replay recordings without leaving the editor.
       "Volo: Replay Recording" (`volo sim` in a terminal) — ADR-0032
 - [x] Pure `trajectory.ts` (parse) + `webview.ts` (render, HTML-escaped) — no `vscode` import,
       8 vitest tests; thin `extension.ts` glue; `tsc` typecheck clean
-- [ ] Wave 4 remaining: M27 hosted sim-minutes, M30 RBAC/SSO (needs auth vendor).
+
+## v3.5.0 — M27: hosted Tier-2 sim-minutes ✅ (commercial)
+Goal: resell simulation compute — a metered, hard-capped job queue over the M26 control plane.
+
+- [x] `SimJob` queue + `SimQuota` (per-workspace hard cap) in `cloud/`; DB-backed (SQLite/Postgres)
+- [x] `volo-cloud-worker` — claims a job, runs the reliability suite, meters wall-clock as
+      sim-minutes, charges the quota, stores the report into workspace history — ADR-0033
+- [x] Enqueue 402 when quota exhausted; agent execution gated by `VOLO_SIM_AGENT_ALLOWLIST`
+      (safe-by-default, ADR-0012 posture)
+- [x] Endpoints `POST/GET /cloud/workspaces/{id}/sim-jobs`, `/quota`
+- [ ] Wave 4 remaining: M30 RBAC/SSO (needs auth vendor). Frontier wave M31–M34.
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.
