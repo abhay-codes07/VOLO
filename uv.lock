@@ -1056,6 +1056,7 @@ dependencies = [
     { name = "sqlmodel" },
     { name = "volo-core" },
     { name = "volo-reliability" },
+    { name = "volo-runner" },
 ]
 
 [package.optional-dependencies]
@@ -1070,6 +1071,7 @@ requires-dist = [
     { name = "uvicorn", extras = ["standard"], marker = "extra == 'serve'", specifier = ">=0.30" },
     { name = "volo-core", editable = "packages/volo-core" },
     { name = "volo-reliability", editable = "packages/volo-reliability" },
+    { name = "volo-runner", editable = "packages/volo-runner" },
 ]
 provides-extras = ["serve"]
 

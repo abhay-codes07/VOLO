@@ -7,9 +7,13 @@ license = { text = "LicenseRef-Volo-Commercial" }
 dependencies = [
   "volo-core",
   "volo-reliability",
+  "volo-runner",
   "fastapi>=0.115",
   "sqlmodel>=0.0.21",
 ]
+
+[project.scripts]
+volo-cloud-worker = "volo_cloud.worker:main"
 
 [project.optional-dependencies]
 serve = ["uvicorn[standard]>=0.30"]

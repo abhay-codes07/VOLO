@@ -16,7 +16,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
 from volo_api.auth import Principal, require_principal
-from volo_cloud import service
+from volo_cloud import service, sim_service
 from volo_cloud.models import ApiKey
 from volo_core.storage import get_engine, init_schema
 
@@ -61,6 +61,16 @@ class ReportIn(BaseModel):
     verdict: str = "unknown"
     aggregate: dict[str, float] = {}
     n_scenarios: int = 0
+
+
+class SimJobIn(BaseModel):
+    agent: str
+    agent_input: dict[str, Any] = {}
+    recording: dict[str, Any]
+
+
+class QuotaIn(BaseModel):
+    minutes: int
 
 
 def create_cloud_app() -> FastAPI:
@@ -144,7 +154,80 @@ def create_cloud_app() -> FastAPI:
         )
         return {"id": row.id, "baseline_run_id": row.baseline_run_id, "verdict": row.verdict}
 
+    # ── hosted Tier-2 sim-minutes (M27) ──────────────────────────────────────
+
+    @app.get("/cloud/workspaces/{workspace_id}/quota")
+    def get_quota(workspace_id: int, key: ApiKey = Depends(require_api_key)) -> dict[str, Any]:
+        _scope(key, workspace_id)
+        q = sim_service.get_or_create_quota(_get_engine(), workspace_id=workspace_id)
+        return {
+            "sim_minute_quota": q.sim_minute_quota,
+            "sim_minutes_used": q.sim_minutes_used,
+            "remaining": q.remaining,
+        }
+
+    @app.put("/cloud/workspaces/{workspace_id}/quota")
+    def set_quota(
+        workspace_id: int, body: QuotaIn, principal: Principal = Depends(require_principal)
+    ) -> dict[str, Any]:
+        del principal
+        q = sim_service.set_quota(_get_engine(), workspace_id=workspace_id, minutes=body.minutes)
+        return {"sim_minute_quota": q.sim_minute_quota, "sim_minutes_used": q.sim_minutes_used}
+
+    @app.post("/cloud/workspaces/{workspace_id}/sim-jobs")
+    def enqueue_sim_job(
+        workspace_id: int, body: SimJobIn, key: ApiKey = Depends(require_api_key)
+    ) -> dict[str, Any]:
+        _scope(key, workspace_id)
+        try:
+            job = sim_service.enqueue_job(
+                _get_engine(),
+                workspace_id=workspace_id,
+                agent=body.agent,
+                agent_input=body.agent_input,
+                recording=body.recording,
+            )
+        except sim_service.QuotaExceeded as exc:
+            raise HTTPException(status_code=402, detail=str(exc)) from exc
+        return {"id": job.id, "status": job.status}
+
+    @app.get("/cloud/workspaces/{workspace_id}/sim-jobs")
+    def list_sim_jobs(
+        workspace_id: int, key: ApiKey = Depends(require_api_key)
+    ) -> list[dict[str, Any]]:
+        _scope(key, workspace_id)
+        return [
+            _job_dict(j) for j in sim_service.list_jobs(_get_engine(), workspace_id=workspace_id)
+        ]
+
+    @app.get("/cloud/workspaces/{workspace_id}/sim-jobs/{job_id}")
+    def get_sim_job(
+        workspace_id: int, job_id: int, key: ApiKey = Depends(require_api_key)
+    ) -> dict[str, Any]:
+        _scope(key, workspace_id)
+        job = sim_service.get_job(_get_engine(), job_id=job_id)
+        if job is None or job.workspace_id != workspace_id:
+            raise HTTPException(status_code=404, detail=f"sim job {job_id} not found")
+        return _job_dict(job)
+
     return app
+
+
+def _scope(key: ApiKey, workspace_id: int) -> None:
+    if key.workspace_id != workspace_id:
+        raise HTTPException(status_code=403, detail="key does not grant this workspace")
+
+
+def _job_dict(job: Any) -> dict[str, Any]:
+    return {
+        "id": job.id,
+        "agent": job.agent,
+        "status": job.status,
+        "sim_minutes": job.sim_minutes,
+        "result_run_id": job.result_run_id,
+        "result_verdict": job.result_verdict,
+        "error": job.error,
+    }
 
 
 def _load(raw: str) -> dict[str, Any]:
