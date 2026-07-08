@@ -14,6 +14,7 @@ from volo_cli.commands.horizon import horizon_command
 from volo_cli.commands.init import init_command
 from volo_cli.commands.mcp import mcp_app
 from volo_cli.commands.migrate import migrate_command
+from volo_cli.commands.multiagent import multiagent_app
 from volo_cli.commands.pack import pack_app
 from volo_cli.commands.persona import persona_app
 from volo_cli.commands.record import record_command
@@ -83,6 +84,7 @@ app.add_typer(persona_app, name="persona")
 app.add_typer(pack_app, name="pack")
 app.add_typer(compliance_app, name="compliance")
 app.add_typer(cu_app, name="cu")
+app.add_typer(multiagent_app, name="multiagent")
 
 
 if __name__ == "__main__":  # pragma: no cover

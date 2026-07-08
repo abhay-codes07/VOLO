@@ -29,6 +29,7 @@ volo-longhorizon    = { workspace = true }
 volo-packs          = { workspace = true }
 volo-compliance     = { workspace = true }
 volo-computeruse    = { workspace = true }
+volo-multiagent     = { workspace = true }
 volo-cli            = { workspace = true }
 pytest-volo         = { workspace = true }
 volo-api            = { workspace = true }
@@ -88,6 +89,7 @@ files = [
     "packages/volo-packs/src",
     "packages/volo-compliance/src",
     "packages/volo-computeruse/src",
+    "packages/volo-multiagent/src",
     "packages/pytest-volo/src",
     "packages/volo-cli/src",
     "services/api/src",
