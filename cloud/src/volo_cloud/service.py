@@ -58,6 +58,13 @@ def create_workspace(engine: Engine, *, team_id: int, slug: str, name: str) -> W
         return ws
 
 
+def workspace_team_id(engine: Engine, *, workspace_id: int) -> int | None:
+    """The team that owns a workspace (for role checks scoped to the team)."""
+    with _session(engine) as s:
+        ws = s.get(Workspace, workspace_id)
+        return ws.team_id if ws is not None else None
+
+
 def mint_api_key(engine: Engine, *, workspace_id: int, name: str) -> tuple[ApiKey, str]:
     """Create an API key for a workspace. Returns ``(row, plaintext)`` — plaintext shown once."""
     with _session(engine) as s:

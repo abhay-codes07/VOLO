@@ -15,8 +15,8 @@ from typing import Any
 from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
-from volo_api.auth import Principal, require_principal
-from volo_cloud import service, sim_service
+from volo_api.auth import Principal, auth_required
+from volo_cloud import audit, rbac, service, sim_service
 from volo_cloud.models import ApiKey
 from volo_core.storage import get_engine, init_schema
 
@@ -29,6 +29,30 @@ def _get_engine() -> Any:
         _engine = get_engine()
         init_schema(_engine)
     return _engine
+
+
+def authed_principal(authorization: str | None = Header(default=None)) -> Principal:
+    """Resolve the caller via the vendor-neutral JWT seam (M30), then apply the auth-required gate.
+
+    No ``VOLO_JWT_SECRET`` → anonymous (local dev). A valid HS256 bearer token → an authenticated
+    principal. When ``VOLO_REQUIRE_AUTH=true``, anonymous is denied.
+    """
+    try:
+        principal = rbac.jwt_principal(authorization)
+    except rbac.AccessDenied as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
+    if auth_required() and principal.is_anonymous:
+        raise HTTPException(status_code=401, detail="authentication required")
+    return principal
+
+
+def _enforce_role(principal: Principal, team_id: int, minimum: str) -> None:
+    try:
+        rbac.require_role(
+            _get_engine(), subject=principal.subject, team_id=team_id, minimum=minimum
+        )
+    except rbac.AccessDenied as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
 def require_api_key(x_volo_key: str | None = Header(default=None)) -> ApiKey:
@@ -73,6 +97,11 @@ class QuotaIn(BaseModel):
     minutes: int
 
 
+class MemberIn(BaseModel):
+    subject: str
+    role: str
+
+
 def create_cloud_app() -> FastAPI:
     app = FastAPI(title="Volo Cloud", version="0.1.0", description="Commercial control plane.")
 
@@ -82,7 +111,7 @@ def create_cloud_app() -> FastAPI:
 
     @app.post("/cloud/teams")
     def create_team(
-        body: TeamIn, principal: Principal = Depends(require_principal)
+        body: TeamIn, principal: Principal = Depends(authed_principal)
     ) -> dict[str, Any]:
         try:
             team = service.create_team(
@@ -90,32 +119,56 @@ def create_cloud_app() -> FastAPI:
             )
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
+        audit.record_audit(
+            _get_engine(),
+            subject=principal.subject,
+            action="team.create",
+            target=f"team:{team.id}",
+            team_id=team.id,
+        )
         return {"id": team.id, "slug": team.slug, "name": team.name}
 
     @app.post("/cloud/teams/{team_id}/workspaces")
     def create_workspace(
-        team_id: int, body: WorkspaceIn, principal: Principal = Depends(require_principal)
+        team_id: int, body: WorkspaceIn, principal: Principal = Depends(authed_principal)
     ) -> dict[str, Any]:
-        del principal
+        _enforce_role(principal, team_id, "admin")
         try:
             ws = service.create_workspace(
                 _get_engine(), team_id=team_id, slug=body.slug, name=body.name
             )
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
+        audit.record_audit(
+            _get_engine(),
+            subject=principal.subject,
+            action="workspace.create",
+            target=f"workspace:{ws.id}",
+            team_id=team_id,
+        )
         return {"id": ws.id, "team_id": ws.team_id, "slug": ws.slug, "name": ws.name}
 
     @app.post("/cloud/workspaces/{workspace_id}/keys")
     def create_key(
-        workspace_id: int, body: KeyIn, principal: Principal = Depends(require_principal)
+        workspace_id: int, body: KeyIn, principal: Principal = Depends(authed_principal)
     ) -> dict[str, Any]:
-        del principal
+        team_id = service.workspace_team_id(_get_engine(), workspace_id=workspace_id)
+        if team_id is None:
+            raise HTTPException(status_code=404, detail=f"workspace {workspace_id} not found")
+        _enforce_role(principal, team_id, "admin")
         try:
             row, plaintext = service.mint_api_key(
                 _get_engine(), workspace_id=workspace_id, name=body.name
             )
         except ValueError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
+        audit.record_audit(
+            _get_engine(),
+            subject=principal.subject,
+            action="key.create",
+            target=f"workspace:{workspace_id}",
+            team_id=team_id,
+        )
         # plaintext is returned exactly once and never stored
         return {"id": row.id, "name": row.name, "prefix": row.prefix, "key": plaintext}
 
@@ -168,11 +221,53 @@ def create_cloud_app() -> FastAPI:
 
     @app.put("/cloud/workspaces/{workspace_id}/quota")
     def set_quota(
-        workspace_id: int, body: QuotaIn, principal: Principal = Depends(require_principal)
+        workspace_id: int, body: QuotaIn, principal: Principal = Depends(authed_principal)
     ) -> dict[str, Any]:
-        del principal
+        team_id = service.workspace_team_id(_get_engine(), workspace_id=workspace_id)
+        if team_id is None:
+            raise HTTPException(status_code=404, detail=f"workspace {workspace_id} not found")
+        _enforce_role(principal, team_id, "admin")
         q = sim_service.set_quota(_get_engine(), workspace_id=workspace_id, minutes=body.minutes)
+        audit.record_audit(
+            _get_engine(),
+            subject=principal.subject,
+            action="quota.set",
+            target=f"workspace:{workspace_id}",
+            team_id=team_id,
+        )
         return {"sim_minute_quota": q.sim_minute_quota, "sim_minutes_used": q.sim_minutes_used}
+
+    # ── RBAC members + audit log (M30) ───────────────────────────────────────
+
+    @app.post("/cloud/teams/{team_id}/members")
+    def set_member(
+        team_id: int, body: MemberIn, principal: Principal = Depends(authed_principal)
+    ) -> dict[str, Any]:
+        _enforce_role(principal, team_id, "owner")
+        try:
+            m = rbac.set_member_role(
+                _get_engine(), team_id=team_id, subject=body.subject, role=body.role
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        audit.record_audit(
+            _get_engine(),
+            subject=principal.subject,
+            action="member.set_role",
+            target=f"{body.subject}={body.role}",
+            team_id=team_id,
+        )
+        return {"team_id": m.team_id, "subject": m.subject, "role": m.role}
+
+    @app.get("/cloud/teams/{team_id}/audit")
+    def list_team_audit(
+        team_id: int, principal: Principal = Depends(authed_principal)
+    ) -> list[dict[str, Any]]:
+        _enforce_role(principal, team_id, "member")
+        return [
+            {"subject": e.subject, "action": e.action, "target": e.target, "at": e.at.isoformat()}
+            for e in audit.list_audit(_get_engine(), team_id=team_id)
+        ]
 
     @app.post("/cloud/workspaces/{workspace_id}/sim-jobs")
     def enqueue_sim_job(
