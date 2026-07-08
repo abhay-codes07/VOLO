@@ -175,6 +175,15 @@ uv run volo compliance build --agent NAME [--reliability r.json] [--safety a.jso
 uv run volo compliance verify evidence.json [--keyring keyring.json]
 ```
 
+## `volo cu inspect` / `replay`
+Inspect or replay a computer-use recording (browser/desktop agents) at the action-event level.
+`replay` serves recorded UI outcomes for action events read from stdin; unseen (action, screen)
+flags. See [Computer-use](/computeruse).
+```bash
+uv run volo cu inspect <recording>
+uv run volo cu replay <recording>   # JSON action per line on stdin
+```
+
 ## `volo scenarios`
 List the default adversarial scenario operators and their failure classes.
 

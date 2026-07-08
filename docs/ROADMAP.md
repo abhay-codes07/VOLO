@@ -277,7 +277,21 @@ Goal: resell simulation compute — a metered, hard-capped job queue over the M2
 - [x] Enqueue 402 when quota exhausted; agent execution gated by `VOLO_SIM_AGENT_ALLOWLIST`
       (safe-by-default, ADR-0012 posture)
 - [x] Endpoints `POST/GET /cloud/workspaces/{id}/sim-jobs`, `/quota`
-- [ ] Wave 4 remaining: M30 RBAC/SSO (needs auth vendor). Frontier wave M31–M34.
+
+## v3.6.0 — M30: RBAC / SSO / audit ✅ (commercial)
+- [x] Team roles (owner>admin>member) enforced on management mutations; owner-only role grants
+- [x] Vendor-neutral SSO — HS256 bearer-JWT verify (stdlib), any provider via `VOLO_JWT_*`;
+      RS256/JWKS documented as the crypto-dep upgrade — ADR-0035
+- [x] Append-only `AuditEvent` on every mutation; `GET /cloud/teams/{id}/audit`
+
+## v3.7.0 — M31: computer-use record/replay ✅ (OSS, frontier)
+Goal: the simulator's next surface after MCP — browser/desktop agents.
+
+- [x] `volo-computeruse`: `ActionEvent` (kind/target/value/**screenshot hash**) keyed on UI state;
+      events map onto the Recording as `cu.<kind>` tool calls — ADR-0034
+- [x] `ComputerUseRecorder` + `ComputerUseReplayServer` (flag on unseen (action, screen), never
+      fabricate UI); `volo cu inspect|replay`
+- [ ] Frontier wave remaining: M32 multi-agent GA, M33 "Volo Certified" program, M34 v5.0 capstone.
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.

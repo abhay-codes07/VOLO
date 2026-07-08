@@ -1,0 +1,49 @@
+---
+title: "Computer-use record/replay"
+description: "Record browser & desktop agents at the action-event level and replay them deterministically — keyed on the screen, flagging any UI state it never saw."
+---
+
+Computer-use agents act on a UI — they click, type, scroll, navigate. That makes them the hardest
+kind to test: the *same* action does different things on different screens, and you can't re-drive
+a live browser deterministically. `volo-computeruse` records the actions and replays them against
+the simulator, keyed on the **screen** so replay is exact and honest.
+
+## The idea
+
+An `ActionEvent` is `(kind, target, value, screen)`, where `screen` is a **screenshot hash** of
+the UI *before* the action. So an action's identity includes the state it ran in — "click #buy on
+the cart screen" is a different event from "click #buy on the home screen". Events map onto the
+ordinary Volo recording as `cu.<kind>` tool calls, so everything else (diff, fuzz, scoring) works
+on them too.
+
+```python
+from volo_computeruse import ActionEvent, ComputerUseRecorder, screenshot_hash
+
+rec = ComputerUseRecorder(session_name="checkout")
+home = screenshot_hash(page.screenshot())          # or a DOM serialization
+rec.record(ActionEvent(kind="click", target="#add-to-cart", screen=home),
+           result={"ok": True}, screen_after=screenshot_hash(page.screenshot()))
+rec.save(".volo/recordings/checkout.json")
+```
+
+## Replay — exact, or flagged
+
+```bash
+uv run volo cu inspect .volo/recordings/checkout.json     # print the action trajectory
+
+# serve recorded UI outcomes for action events read from stdin (one JSON per line)
+echo '{"kind":"click","target":"#add-to-cart","screen":"<home-hash>"}' \
+  | uv run volo cu replay .volo/recordings/checkout.json
+# {"result": {"ok": true}, "screen_after": "..."}
+```
+
+A seen (action, screen) replays its recorded outcome. An action on a screen the recording never
+saw returns `{"__flagged__": "..."}` — the simulator **never fabricates a UI state** it didn't
+observe (the same flag-on-unknown invariant as the rest of Volo). Fidelity is exactly as strict as
+the screen fingerprint: identical DOM/screenshot → a hit; any difference → a flag.
+
+## Status
+
+This ships the record/replay core and CLI; a live driver (Playwright / pyautogui) that feeds the
+recorder from a real browser or desktop is the next step — the same way MCP shipped its cores
+before the stdio transport.
