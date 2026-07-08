@@ -240,8 +240,18 @@ Goal: turn Volo's reports into signed, deterministic audit evidence mapped to co
       signature (`sign_evidence` / `verify_evidence`); Markdown + self-contained HTML report
 - [x] `volo compliance build|verify` — `--require-satisfied` exits 8; `verify` exit 1 on
       checksum/signature failure
-- [ ] Wave 4 remaining (needs founder call): M26 cloud control plane (paid), M27 hosted sim-minutes,
-      M28 PR-check GitHub App (OSS), M30 RBAC/SSO. M23 VS Code deferred.
+
+## v3.2.0 — M28: PR-check GitHub Action ✅ (wave 4, OSS-first)
+Goal: reliability (+ compliance) gate on every PR — entirely in the user's CI, no hosting.
+
+- [x] `volo comment` — sticky PR-comment Markdown (reliability + optional compliance), hidden
+      marker for update-not-spam; UTF-8-safe stdout — ADR-0030
+- [x] Composite Action `.github/actions/volo-pr-check/action.yml` — runs `volo ci`, optional
+      `volo compliance build`, posts/updates the sticky comment via `gh` + `GITHUB_TOKEN`, fails
+      the check on regression. No third-party action, no secrets.
+- [x] Workflow template `examples/workflows/volo-pr-check.yml`
+- [ ] Wave 4 remaining (needs founder call): M26 cloud control plane (paid), M27 hosted
+      sim-minutes, M30 RBAC/SSO. M23 VS Code deferred.
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.

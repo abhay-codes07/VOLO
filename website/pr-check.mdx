@@ -1,0 +1,58 @@
+---
+title: "PR reliability check (GitHub)"
+description: "Replay your agent on every pull request and post a sticky reliability + compliance comment — entirely in your CI, no hosting, no API cost."
+---
+
+Volo gates PRs the way linters do: on every pull request it replays your baseline recording
+against the agent, **fails the check on a reliability regression**, and posts a single sticky
+comment with the reliability surface (and, optionally, the compliance summary). It runs entirely
+inside your GitHub Actions — no hosted service, no API spend (deterministic replay).
+
+## Drop-in workflow
+
+```yaml
+name: volo-pr-check
+on: pull_request
+permissions:
+  contents: read
+  pull-requests: write        # to post/update the sticky comment
+jobs:
+  reliability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: abhay-codes07/VOLO/.github/actions/volo-pr-check@v3.0.0
+        with:
+          baseline: ./.volo/recordings/baseline.json
+          agent: my_package.agent:run
+          input: '{"query": "hello"}'
+          fail-under: "0.9"
+          # frameworks: all    # also post a compliance evidence summary
+```
+
+The template lives at
+[`examples/workflows/volo-pr-check.yml`](https://github.com/abhay-codes07/VOLO/blob/main/examples/workflows/volo-pr-check.yml).
+
+## What it does
+
+1. `volo ci` replays the baseline against the agent and writes `report.json`; the job **fails if
+   the verdict regresses** below `fail-under`.
+2. If `frameworks` is set, `volo compliance build` produces an evidence pack from that report.
+3. `volo comment` renders a **sticky** Markdown comment (a hidden `<!-- volo-pr-check -->` marker
+   lets it *update* its previous comment instead of spamming a new one each push).
+4. The comment is posted with the workflow's `GITHUB_TOKEN` via `gh` — no third-party action, no
+   secrets to configure.
+
+The comment shows the reliability verdict, the four dimensions against the threshold, cost
+(`$0` under replay), and — with `frameworks` — a per-control compliance table.
+
+## Render it yourself
+
+`volo comment` is a plain command, so you can produce the same body outside CI (or for a different
+poster):
+
+```bash
+uv run volo comment --report report.json --evidence evidence.json --out comment.md
+```
+
+It emits UTF-8, so piping to a file or another tool is safe on any platform.

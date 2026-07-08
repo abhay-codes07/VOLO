@@ -34,6 +34,13 @@ uv run volo run <recording> --agent <module:fn> --input '{...}' \
 PR-gating entrypoint: same engine as `run`, CI-friendly output, non-zero exit on regression.
 See [Gate pull requests in CI](/ci). Adds `--summary-md PATH`.
 
+## `volo comment`
+Render a sticky PR-comment Markdown from a reliability report (+ optional compliance evidence).
+Used by the [PR-check Action](/pr-check); emits UTF-8 to stdout / `--out`.
+```bash
+uv run volo comment --report report.json [--evidence evidence.json] [--out comment.md]
+```
+
 ## `volo diff`
 Diff two runs and attribute the regression to a step ("git bisect for agents").
 ```bash
