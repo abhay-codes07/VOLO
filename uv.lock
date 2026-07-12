@@ -1269,6 +1269,7 @@ name = "volo-cloud"
 version = "0.1.0"
 source = { editable = "cloud" }
 dependencies = [
+    { name = "cryptography" },
     { name = "fastapi" },
     { name = "sqlmodel" },
     { name = "volo-core" },
@@ -1283,6 +1284,7 @@ serve = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cryptography", specifier = ">=42" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "sqlmodel", specifier = ">=0.0.21" },
     { name = "uvicorn", extras = ["standard"], marker = "extra == 'serve'", specifier = ">=0.30" },
