@@ -17,7 +17,7 @@ import hmac
 import json
 from pathlib import Path
 
-from volo_packs.pack import Pack, PackSignature
+from volo_packs.pack import Pack, PackSignature, content_checksum
 
 HMAC_SHA256 = "hmac-sha256"
 
@@ -46,6 +46,10 @@ def verify_pack_signature(pack: Pack, keyring: Keyring) -> bool:
         return False
     secret = keyring.get(sig.publisher)
     if secret is None:
+        return False
+    # Verify the manifest's checksum matches actual content before trusting signature.
+    actual_checksum = content_checksum(pack.items)
+    if not hmac.compare_digest(actual_checksum, pack.manifest.checksum):
         return False
     expected = hmac.new(secret.encode("utf-8"), _message(pack), hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected, sig.value)
