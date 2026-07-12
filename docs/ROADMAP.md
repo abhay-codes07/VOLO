@@ -318,11 +318,18 @@ Goal: prove the whole charter composes — one recording through every gate — 
 - [x] README refreshed: full-pipeline diagram, accurate package inventory, open-core license note
 - [x] **v1.1 → v5.0 charter complete.** All pillars P1–P10, milestones M1–M34 shipped.
 
-### Post-v5.0 (documented next steps, each in its ADR)
-- Asymmetric signing (Ed25519/RS256) for packs / evidence / certificates (crypto dep) — ADR-0028/0037
-- RS256/JWKS SSO for the cloud plane (crypto dep) — ADR-0035
-- Hosted infra for sim-minutes (a queue/worker machine + metering) — ADR-0033
-- A live computer-use driver (Playwright/pyautogui) feeding the recorder — ADR-0034
+## v5.1.0 — post-v5.0 hardening ✅ (deploy release, 2026-07-13)
+All shipped and merged to `main` (565 tests, 0 warnings):
+- [x] Ed25519 asymmetric signing for packs / evidence / certificates (#5)
+- [x] RS256 / JWKS SSO for the cloud plane (#6)
+- [x] Hosted-deploy artifacts (Dockerfiles + fly.toml) for the sim-minutes API + worker (#7)
+- [x] Live Playwright computer-use driver (#8)
+- [x] Fixes: pack-signature content binding — **security** (#16), CLI cp1252 `--help` crash (#18),
+      JWT `exp` required (#20), reliability/security test gaps (#19), httpx2 (#21), package-manager
+      alignment (#22)
+- [x] `docs/DEPLOY.md` deploy runbook
+- [ ] **Open (design decision):** #10 — `ambiguous_user_turn` / `inject_latency` operators are
+      inert (false verdicts); fixing changes what the reliability suite measures.
 
 ## v2.4.0 — M24: public reliability leaderboard ✅
 Goal: one **Volo Score** per agent — the credibility/dataset engine, deterministic and static.
