@@ -94,7 +94,11 @@ def verify_hs256_jwt(token: str, *, secret: str, issuer: str | None, audience: s
         raise AccessDenied("bad JWT signature")
     claims = json.loads(_b64url_decode(payload_b64))
     exp = claims.get("exp")
-    if isinstance(exp, int | float) and time.time() > exp:
+    # Require exp: a token without an expiry never expires, and JWTs have no revocation, so a
+    # captured no-exp token would be a permanent credential.
+    if not isinstance(exp, int | float):
+        raise AccessDenied("JWT missing 'exp'")
+    if time.time() > exp:
         raise AccessDenied("JWT expired")
     if issuer and claims.get("iss") != issuer:
         raise AccessDenied("JWT issuer mismatch")
