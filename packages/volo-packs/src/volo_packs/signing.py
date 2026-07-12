@@ -18,7 +18,7 @@ import json
 from pathlib import Path
 
 from volo_core import ED25519, sign_ed25519, verify_ed25519
-from volo_packs.pack import Pack, PackSignature
+from volo_packs.pack import Pack, PackSignature, content_checksum
 
 HMAC_SHA256 = "hmac-sha256"
 
@@ -52,13 +52,19 @@ def sign_pack_ed25519(pack: Pack, *, publisher: str, private_pem: str) -> Pack:
 
 
 def verify_pack_signature(pack: Pack, keyring: Keyring) -> bool:
-    """True if the pack carries a valid signature from a keyring publisher over its current content.
+    """True if the pack carries a valid signature from a keyring publisher over its **actual** content.
 
+    The signed message binds the manifest checksum, so verification first confirms the manifest
+    checksum still matches the real items — otherwise an attacker could swap ``pack.items`` while
+    leaving ``manifest.checksum`` (and thus the signature) untouched and still verify as valid.
     Handles both HMAC (keyring value = shared secret) and Ed25519 (keyring value = public-key PEM),
     selected by the signature's algorithm tag.
     """
     sig = pack.manifest.signature
     if sig is None:
+        return False
+    # Re-bind to real content: a stale/forged manifest checksum invalidates the signature.
+    if content_checksum(pack.items) != pack.manifest.checksum:
         return False
     key = keyring.get(sig.publisher)
     if key is None:
