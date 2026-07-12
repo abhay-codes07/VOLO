@@ -7,6 +7,7 @@ from volo_certify.certificate import (
     CertSignature,
     evaluate,
     sign_certificate,
+    sign_certificate_ed25519,
     verify_certificate,
 )
 from volo_certify.run import certify
@@ -20,5 +21,6 @@ __all__ = [
     "render_badge_markdown",
     "render_badge_svg",
     "sign_certificate",
+    "sign_certificate_ed25519",
     "verify_certificate",
 ]

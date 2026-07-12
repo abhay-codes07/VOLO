@@ -10,6 +10,11 @@ dependencies = [
   "sqlmodel>=0.0.21",
 ]
 
+# Asymmetric (Ed25519) signing is opt-in — `volo_core.asymmetric` lazily imports it, so the OSS
+# core stays lean and only signing paths that want asymmetric pull the crypto dependency.
+[project.optional-dependencies]
+crypto = ["cryptography>=42"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

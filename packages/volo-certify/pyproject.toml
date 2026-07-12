@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Volo Certified — compose reliability + safety into a signed agent certificate + badge."
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
-dependencies = ["volo-core", "volo-reliability", "volo-redteam", "volo-runner"]
+dependencies = ["volo-core", "volo-reliability", "volo-redteam", "volo-runner", "cryptography>=42"]
 
 [build-system]
 requires = ["hatchling"]
