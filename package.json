@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "description": "Volo monorepo root — not published.",
-  "packageManager": "pnpm@9.12.0",
+  "packageManager": "npm@11.6.1",
   "engines": {
     "node": ">=20"
   },
