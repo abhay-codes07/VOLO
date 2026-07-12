@@ -1,0 +1,22 @@
+# Volo Cloud — sim-minutes worker image (M27).
+# Build context is the REPO ROOT:
+#   docker build -f cloud/deploy/Dockerfile.worker -t volo-cloud-worker .
+#
+# Runs the queue drain loop: claim a queued SimJob, run the reliability suite, meter wall-clock as
+# sim-minutes, charge the workspace quota, store the report. Point it at the same VOLO_DB_URL as the
+# API. A job's agent is only executed if it is in VOLO_SIM_AGENT_ALLOWLIST (safe-by-default,
+# ADR-0033) — production should additionally sandbox this container per job.
+FROM python:3.12-slim
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+COPY . .
+RUN uv sync --frozen --all-packages --all-extras
+
+# --poll: seconds between queue polls when idle. Override with --once to drain and exit.
+CMD ["uv", "run", "volo-cloud-worker", "--poll", "2"]
