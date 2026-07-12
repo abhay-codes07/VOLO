@@ -42,8 +42,23 @@ saw returns `{"__flagged__": "..."}` — the simulator **never fabricates a UI s
 observe (the same flag-on-unknown invariant as the rest of Volo). Fidelity is exactly as strict as
 the screen fingerprint: identical DOM/screenshot → a hit; any difference → a flag.
 
-## Status
+## Live driver (Playwright)
 
-This ships the record/replay core and CLI; a live driver (Playwright / pyautogui) that feeds the
-recorder from a real browser or desktop is the next step — the same way MCP shipped its cores
-before the stdio transport.
+`PlaywrightDriver` is the live transport — it wraps a Playwright `Page`, performs each action on
+the real browser, hashes the screen before/after, and records an `ActionEvent`. The recording then
+replays deterministically offline. It's duck-typed over the Page (never imports `playwright` at the
+core), so it's browser-free unless you opt in with `volo-computeruse[playwright]`.
+
+```python
+from playwright.sync_api import sync_playwright
+from volo_computeruse import PlaywrightDriver
+
+with sync_playwright() as pw:
+    page = pw.chromium.launch().new_page()
+    driver = PlaywrightDriver(page, session_name="checkout")
+    driver.navigate("https://shop.example")
+    driver.click("#add-to-cart")
+    driver.type("#coupon", "SAVE10")
+    driver.save(".volo/recordings/checkout.json")   # now replay it in CI, offline, at $0
+```
+
