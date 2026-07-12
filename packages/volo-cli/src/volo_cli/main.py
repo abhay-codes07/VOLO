@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import contextlib
+import sys
+
 import typer
 
 from volo_cli.commands.certify import certify_app
@@ -27,6 +30,25 @@ from volo_cli.commands.sim import sim_command
 from volo_core.env import load_env
 
 __version__ = "0.1.0.dev0"
+
+
+def _force_utf8_io() -> None:
+    """Make stdout/stderr UTF-8 so the CLI never crashes on non-ASCII output under a legacy
+    codepage (Windows cp1252 when piped/redirected/in CI). Runs at import — before Click renders
+    ``--help`` — so even help text with a stray non-ASCII char is safe. ``errors='replace'`` keeps
+    a bad byte from ever raising. No-op where the stream can't be reconfigured (e.g. pytest capture).
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            # stream already detached/closed -> nothing we can do, and never worth crashing over
+            with contextlib.suppress(ValueError, OSError):
+                reconfigure(encoding="utf-8", errors="replace")
+
+
+# Runs at import (the console-script imports this module before invoking `app`), so it takes
+# effect before Click renders any output — including `--help`.
+_force_utf8_io()
 
 app = typer.Typer(
     name="volo",

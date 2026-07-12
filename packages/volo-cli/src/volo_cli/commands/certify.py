@@ -18,7 +18,7 @@ INVALID_EXIT_CODE = 1
 
 certify_app = typer.Typer(
     name="certify",
-    help="Volo Certified — reliability + safety → a signed agent certificate + badge.",
+    help="Volo Certified - reliability + safety -> a signed agent certificate + badge.",
     no_args_is_help=True,
 )
 
