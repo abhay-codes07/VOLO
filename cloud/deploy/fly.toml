@@ -1,0 +1,29 @@
+# Fly.io manifest for the Volo Cloud control plane (API + sim-minutes worker).
+# One image, two processes. Set secrets (DB, auth, allowlist) with `fly secrets set` — see README.
+app = "volo-cloud"
+primary_region = "iad"
+
+[build]
+  dockerfile = "cloud/deploy/Dockerfile.api"
+
+[env]
+  # Deny anonymous callers; a real IdP is wired via VOLO_JWT_JWKS / VOLO_JWT_SECRET (secrets).
+  VOLO_REQUIRE_AUTH = "true"
+
+# The API serves HTTP; the worker drains the sim-minutes queue. Both run from the same image;
+# the worker process overrides the command.
+[processes]
+  app = "uv run uvicorn volo_cloud.app:create_cloud_app --factory --host 0.0.0.0 --port 8080"
+  worker = "uv run volo-cloud-worker --poll 2"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

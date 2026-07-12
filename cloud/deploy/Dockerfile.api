@@ -1,0 +1,26 @@
+# Volo Cloud — API image (the FastAPI control plane).
+# Build context is the REPO ROOT (the app is a uv-workspace member):
+#   docker build -f cloud/deploy/Dockerfile.api -t volo-cloud-api .
+#
+# Syncs the whole workspace so transitive workspace deps (volo-core, volo-api for the auth seam,
+# volo-runner, …) and the `serve` extra (uvicorn) are present. Optimizing to a slim, cloud-only
+# image is a follow-up.
+FROM python:3.12-slim
+
+# uv provides fast, reproducible installs from the committed uv.lock.
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PYTHONUNBUFFERED=1 \
+    # deny anonymous callers in a hosted deployment (M30 auth gate)
+    VOLO_REQUIRE_AUTH=true
+
+WORKDIR /app
+COPY . .
+RUN uv sync --frozen --all-packages --all-extras
+
+EXPOSE 8080
+# uvicorn calls the app factory create_cloud_app()
+CMD ["uv", "run", "uvicorn", "volo_cloud.app:create_cloud_app", \
+     "--factory", "--host", "0.0.0.0", "--port", "8080"]
