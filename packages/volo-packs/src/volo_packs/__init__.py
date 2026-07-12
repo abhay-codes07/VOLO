@@ -29,6 +29,7 @@ from volo_packs.signing import (
     Keyring,
     load_keyring,
     sign_pack,
+    sign_pack_ed25519,
     verify_pack_signature,
 )
 from volo_packs.store import InstalledPack, PackInstallError, PackStore
@@ -60,6 +61,7 @@ __all__ = [
     "resolve",
     "save_index",
     "sign_pack",
+    "sign_pack_ed25519",
     "starter_items",
     "validate_items",
     "validate_pack",

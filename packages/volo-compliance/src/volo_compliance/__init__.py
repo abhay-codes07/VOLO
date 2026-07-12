@@ -8,6 +8,7 @@ from volo_compliance.pack import (
     EvidencePack,
     EvidenceSignature,
     sign_evidence,
+    sign_evidence_ed25519,
     verify_evidence,
 )
 
@@ -24,5 +25,6 @@ __all__ = [
     "render_html",
     "render_markdown",
     "sign_evidence",
+    "sign_evidence_ed25519",
     "verify_evidence",
 ]

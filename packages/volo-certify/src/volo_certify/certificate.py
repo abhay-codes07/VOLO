@@ -15,7 +15,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from volo_core import canonical_json
+from volo_core import ED25519, canonical_json, sign_ed25519, verify_ed25519
 
 HMAC_SHA256 = "hmac-sha256"
 
@@ -79,6 +79,7 @@ def _message(cert: Certificate) -> bytes:
 
 
 def sign_certificate(cert: Certificate, *, publisher: str, secret: str) -> Certificate:
+    """Sign a certificate with a shared secret (HMAC-SHA256)."""
     if not cert.checksum:
         cert = cert.sealed()
     value = hmac.new(secret.encode("utf-8"), _message(cert), hashlib.sha256).hexdigest()
@@ -87,17 +88,36 @@ def sign_certificate(cert: Certificate, *, publisher: str, secret: str) -> Certi
     )
 
 
+def sign_certificate_ed25519(cert: Certificate, *, publisher: str, private_pem: str) -> Certificate:
+    """Sign a certificate with an Ed25519 private key (asymmetric; anyone verifies with the public key)."""
+    if not cert.checksum:
+        cert = cert.sealed()
+    value = sign_ed25519(_message(cert), private_pem)
+    return cert.model_copy(
+        update={"signature": CertSignature(publisher=publisher, algorithm=ED25519, value=value)}
+    )
+
+
 def verify_certificate(cert: Certificate, keyring: dict[str, str]) -> bool:
+    """True iff the certificate is untampered and signed by a keyring publisher.
+
+    Keyring values are shared secrets for HMAC signatures and public-key PEMs for Ed25519 ones;
+    the algorithm tag selects the branch.
+    """
     sig = cert.signature
-    if sig is None or sig.algorithm != HMAC_SHA256:
+    if sig is None:
         return False
     if cert.checksum != cert.content_checksum():
         return False
-    secret = keyring.get(sig.publisher)
-    if secret is None:
+    key = keyring.get(sig.publisher)
+    if key is None:
         return False
-    expected = hmac.new(secret.encode("utf-8"), _message(cert), hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected, sig.value)
+    if sig.algorithm == HMAC_SHA256:
+        expected = hmac.new(key.encode("utf-8"), _message(cert), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected, sig.value)
+    if sig.algorithm == ED25519:
+        return verify_ed25519(_message(cert), sig.value, key)
+    return False
 
 
 def _score(aggregate: dict[str, Any]) -> int:

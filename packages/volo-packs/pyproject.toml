@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Volo pack format — versioned, checksummed bundles of attacks / personas / scenarios."
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
-dependencies = ["volo-core", "volo-scenarios", "volo-redteam", "volo-personas"]
+dependencies = ["volo-core", "volo-scenarios", "volo-redteam", "volo-personas", "cryptography>=42"]
 
 [build-system]
 requires = ["hatchling"]

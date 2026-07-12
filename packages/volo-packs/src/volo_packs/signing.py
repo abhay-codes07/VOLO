@@ -17,10 +17,13 @@ import hmac
 import json
 from pathlib import Path
 
+from volo_core import ED25519, sign_ed25519, verify_ed25519
 from volo_packs.pack import Pack, PackSignature
 
 HMAC_SHA256 = "hmac-sha256"
 
+# A keyring maps publisher -> secret (HMAC) or public-key PEM (Ed25519); the branch is chosen by
+# the signature's algorithm tag, so a registry can mix symmetric and asymmetric publishers.
 Keyring = dict[str, str]
 
 
@@ -39,16 +42,33 @@ def sign_pack(pack: Pack, *, publisher: str, secret: str) -> Pack:
     return pack
 
 
+def sign_pack_ed25519(pack: Pack, *, publisher: str, private_pem: str) -> Pack:
+    """Sign ``pack`` with ``publisher``'s Ed25519 private key (asymmetric); returns the pack."""
+    if not publisher:
+        raise ValueError("publisher is required to sign a pack")
+    value = sign_ed25519(_message(pack), private_pem)
+    pack.manifest.signature = PackSignature(publisher=publisher, algorithm=ED25519, value=value)
+    return pack
+
+
 def verify_pack_signature(pack: Pack, keyring: Keyring) -> bool:
-    """True if the pack carries a signature from a keyring publisher over its current content."""
+    """True if the pack carries a valid signature from a keyring publisher over its current content.
+
+    Handles both HMAC (keyring value = shared secret) and Ed25519 (keyring value = public-key PEM),
+    selected by the signature's algorithm tag.
+    """
     sig = pack.manifest.signature
-    if sig is None or sig.algorithm != HMAC_SHA256:
+    if sig is None:
         return False
-    secret = keyring.get(sig.publisher)
-    if secret is None:
+    key = keyring.get(sig.publisher)
+    if key is None:
         return False
-    expected = hmac.new(secret.encode("utf-8"), _message(pack), hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected, sig.value)
+    if sig.algorithm == HMAC_SHA256:
+        expected = hmac.new(key.encode("utf-8"), _message(pack), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected, sig.value)
+    if sig.algorithm == ED25519:
+        return verify_ed25519(_message(pack), sig.value, key)
+    return False
 
 
 def load_keyring(path: Path | str) -> Keyring:

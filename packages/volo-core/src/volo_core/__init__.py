@@ -1,5 +1,12 @@
 """volo-core — pure domain models and interfaces. Imported by every other package."""
 
+from volo_core.asymmetric import (
+    ED25519,
+    CryptographyUnavailable,
+    generate_keypair,
+    sign_ed25519,
+    verify_ed25519,
+)
 from volo_core.cache import cache_key, canonical_json
 from volo_core.context import (
     current_environment,
@@ -33,7 +40,9 @@ from volo_core.recording import (
 from volo_core.redaction import RedactionConfig, redact_recording, redact_value
 
 __all__ = [
+    "ED25519",
     "RECORDING_SCHEMA_VERSION",
+    "CryptographyUnavailable",
     "DecisionPayload",
     "EnvSnapshot",
     "ModelCallPayload",
@@ -47,6 +56,7 @@ __all__ = [
     "canonical_json",
     "current_environment",
     "current_recorder",
+    "generate_keypair",
     "get_active_environment",
     "get_active_recorder",
     "load_recording",
@@ -61,4 +71,6 @@ __all__ = [
     "save_recording",
     "set_active_environment",
     "set_active_recorder",
+    "sign_ed25519",
+    "verify_ed25519",
 ]

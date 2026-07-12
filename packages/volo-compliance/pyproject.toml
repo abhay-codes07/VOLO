@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Volo compliance — signed, deterministic evidence packs mapped to control frameworks."
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
-dependencies = ["volo-core", "volo-reliability", "volo-redteam", "volo-shadow"]
+dependencies = ["volo-core", "volo-reliability", "volo-redteam", "volo-shadow", "cryptography>=42"]
 
 [build-system]
 requires = ["hatchling"]

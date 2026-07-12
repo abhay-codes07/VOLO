@@ -15,7 +15,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from volo_core import canonical_json
+from volo_core import ED25519, canonical_json, sign_ed25519, verify_ed25519
 
 HMAC_SHA256 = "hmac-sha256"
 ControlState = Literal["satisfied", "partial", "unmet"]
@@ -114,14 +114,32 @@ def sign_evidence(pack: EvidencePack, *, publisher: str, secret: str) -> Evidenc
     )
 
 
+def sign_evidence_ed25519(pack: EvidencePack, *, publisher: str, private_pem: str) -> EvidencePack:
+    """Sign a sealed pack with an Ed25519 private key (asymmetric); returns a copy with the signature."""
+    if not pack.checksum:
+        pack = pack.sealed()
+    value = sign_ed25519(_message(pack), private_pem)
+    return pack.model_copy(
+        update={"signature": EvidenceSignature(publisher=publisher, algorithm=ED25519, value=value)}
+    )
+
+
 def verify_evidence(pack: EvidencePack, keyring: dict[str, str]) -> bool:
+    """True iff the pack is untampered and signed by a keyring publisher.
+
+    Keyring values are shared secrets (HMAC) or public-key PEMs (Ed25519), per the algorithm tag.
+    """
     sig = pack.signature
-    if sig is None or sig.algorithm != HMAC_SHA256:
+    if sig is None:
         return False
     if pack.checksum != pack.content_checksum():  # content tampered
         return False
-    secret = keyring.get(sig.publisher)
-    if secret is None:
+    key = keyring.get(sig.publisher)
+    if key is None:
         return False
-    expected = hmac.new(secret.encode("utf-8"), _message(pack), hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected, sig.value)
+    if sig.algorithm == HMAC_SHA256:
+        expected = hmac.new(key.encode("utf-8"), _message(pack), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected, sig.value)
+    if sig.algorithm == ED25519:
+        return verify_ed25519(_message(pack), sig.value, key)
+    return False
